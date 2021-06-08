@@ -1,5 +1,12 @@
 add_library(${PROJECT_NAME}_lib
+  ${CMAKE_CURRENT_SOURCE_DIR}/Polynomial.cpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Polynomial.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Monomial.cpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Monomial.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Term.cpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Term.hpp
   )
+
 
 # set include directories
 target_include_directories(${PROJECT_NAME}_lib PUBLIC

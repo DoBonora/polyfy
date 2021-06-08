@@ -1,0 +1,58 @@
+#ifndef POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_
+#define POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_
+
+#include <gmpxx.h>
+#include "../include/Term.hpp"
+
+
+class Monomial
+{
+public:
+  //! Default constructor
+  Monomial(uint32_t coeff, const Term& t);
+  Monomial(const mpz_class& coeff, const Term& t);
+
+  // //! Copy constructor
+  // Monomial(const Monomial &other);
+
+  // //! Move constructor
+  // Monomial(Monomial &&other) noexcept;
+
+  // //! Copy assignment operator
+  // Monomial& operator=(const Monomial &other);
+
+  // //! Move assignment operator
+  // Monomial& operator=(Monomial &&other) noexcept;
+
+  Monomial operator*(const Monomial& other) const;
+  Monomial operator*(uint32_t var) const;
+
+  /* these operations assume t == other.t */
+  Monomial operator+(const Monomial& other) const;
+  Monomial operator-(const Monomial& other) const;
+  
+  Monomial& operator*=(const Monomial& other) ;
+  Monomial& operator*=(uint32_t var) ;
+            
+  /* these  operations assume t == other.t */
+  Monomial& operator+=(const Monomial& other) ;
+  Monomial& operator-=(const Monomial& other) ;
+
+  /* only considers monomial ordering, coefficients are irrelevant*/
+  bool operator<(const Monomial& other) const;
+  bool operator<=(const Monomial& other) const;
+  bool operator>(const Monomial& other) const;
+  bool operator>=(const Monomial& other) const;
+  bool operator==(const Monomial& other) const;
+
+  
+protected:
+private:
+  mpz_class coeff;
+  Term t;
+
+  friend class Polynomial;
+};
+
+
+#endif /* POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_ */
