@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.14...3.19)
 project(polyfy
         LANGUAGES CXX
         )
 
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# configuration options
+option(DEPLOY "Configure for deployment")
+option(BUILD_TESTS "Also build tests for QMAP project")
 
 #build type settings
 set(default_build_type "Release")
@@ -15,15 +19,27 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Add path for custom modules
-list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-find_package(GMP REQUIRED)
-add_library(gmp::libgmp IMPORTED INTERFACE)
-
-# Add path for custom modules
 list (APPEND CMAKE_MODULE_PATH
       "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+    
+find_package(GMP REQUIRED)
+add_library(gmp::gmpxx IMPORTED INTERFACE)
+add_library(gmp::libgmpxx IMPORTED INTERFACE)
+add_library(gmp::libgmp IMPORTED INTERFACE)
+
+
 add_subdirectory(src)
 
-add_subdirectory(apps)
+# add test code
+if (BUILD_TESTS)
+	enable_testing()
+	#include(GoogleTest)
+        find_package(GTest REQUIRED)
+	add_subdirectory(test)
+endif ()
+
+# add apps if this is the main project
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+	add_subdirectory(apps)
+endif()

@@ -5,6 +5,8 @@ add_library(${PROJECT_NAME}_lib
   ${${PROJECT_NAME}_SOURCE_DIR}/include/Monomial.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Term.cpp
   ${${PROJECT_NAME}_SOURCE_DIR}/include/Term.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/Ideal.cpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Ideal.hpp
   )
 
 
@@ -12,10 +14,10 @@ add_library(${PROJECT_NAME}_lib
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
 	                           $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include/>)
 
-# set required C++ standard and disable compiler specific extensions
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 set_target_properties(${PROJECT_NAME}_lib PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
+target_link_libraries(${PROJECT_NAME}_lib PUBLIC gmpxx gmp::libgmpxx gmp gmp::libgmp )
 
 # enable interprocedural optimization if it is supported
 include(CheckIPOSupported)

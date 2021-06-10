@@ -2,6 +2,8 @@
 #define POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_
 
 #include <gmpxx.h>
+#include <initializer_list>
+
 #include "../include/Term.hpp"
 
 
@@ -9,35 +11,38 @@ class Monomial
 {
 public:
   //! Default constructor
-  Monomial(uint32_t coeff, const Term& t);
+  Monomial();
+  Monomial(int32_t coeff, const Term& t);
   Monomial(const mpz_class& coeff, const Term& t);
+  Monomial(const Term& t);
 
-  // //! Copy constructor
-  // Monomial(const Monomial &other);
+  //! Copy constructor
+  Monomial(const Monomial &other);
 
   // //! Move constructor
   // Monomial(Monomial &&other) noexcept;
 
-  // //! Copy assignment operator
-  // Monomial& operator=(const Monomial &other);
+  //! Copy assignment operator
+  Monomial& operator=(const Monomial &other);
 
   // //! Move assignment operator
   // Monomial& operator=(Monomial &&other) noexcept;
 
   Monomial operator*(const Monomial& other) const;
-  Monomial operator*(uint32_t var) const;
+  Monomial operator*(int32_t factor) const;
 
   /* these operations assume t == other.t */
   Monomial operator+(const Monomial& other) const;
   Monomial operator-(const Monomial& other) const;
   
   Monomial& operator*=(const Monomial& other) ;
-  Monomial& operator*=(uint32_t var) ;
+  Monomial& operator*=(int32_t factor) ;
             
   /* these  operations assume t == other.t */
   Monomial& operator+=(const Monomial& other) ;
   Monomial& operator-=(const Monomial& other) ;
 
+  Monomial operator-() const;
   /* only considers monomial ordering, coefficients are irrelevant*/
   bool operator<(const Monomial& other) const;
   bool operator<=(const Monomial& other) const;
@@ -45,6 +50,7 @@ public:
   bool operator>=(const Monomial& other) const;
   bool operator==(const Monomial& other) const;
 
+  bool is_zero() const;
   
 protected:
 private:
@@ -54,5 +60,6 @@ private:
   friend class Polynomial;
 };
 
+Monomial operator*(int32_t factor, const Monomial& m);
 
 #endif /* POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_ */

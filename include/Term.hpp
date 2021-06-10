@@ -3,6 +3,8 @@
 
 #include <set>
 #include <cstdint>
+#include <vector>
+#include <initializer_list>
 
 /*
  * A term is just a set of variables
@@ -12,7 +14,10 @@ class Term
 {
 public:
   //! Default constructor
-  Term(const std::set<uint32_t> variables);
+  Term() = default;
+  Term(const std::set<uint32_t, std::greater<uint32_t>> variables);
+  Term(const std::vector<uint32_t> vars);
+  Term(const std::initializer_list<uint32_t> vars);
   Term(uint32_t variable);
 
   //! Copy constructor
@@ -24,11 +29,11 @@ public:
   // //! Destructor
   // virtual ~Term() noexcept;
 
-  // //! Copy assignment operator
-  // Term& operator=(const Term &other);
+  //! Copy assignment operator
+  Term& operator=(const Term &other) = default;
 
   //! Move assignment operator
-  Term& operator=(Term &&other) noexcept;
+  Term& operator=(Term &&other) noexcept = default;
 
   Term operator*(const Term& other) const;
 
@@ -44,7 +49,7 @@ public:
   
 protected:
 private:
-  const std::set<uint32_t> variables;
+  std::set<uint32_t, std::greater<uint32_t>> variables;
 };
 
 

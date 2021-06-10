@@ -8,6 +8,7 @@ endif (GMP_INCLUDES AND GMP_LIBRARIES)
 find_path(GMP_INCLUDES
   NAMES
   gmp.h
+  gmpxx.h
   PATHS
   $ENV{GMPDIR}
   ${INCLUDE_INSTALL_DIR}
