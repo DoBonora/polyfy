@@ -30,7 +30,7 @@ public:
   // //! Move assignment operator
   // Ideal& operator=(Ideal &&other) noexcept;
 
-  /* variable is assumed to be smaller then all others inserted before */
+  /* variable is assumed to be greater then all others inserted before */
   bool add_variable(const std::string& var);
 
   Polynomial from_string(const std::string& s) const ;

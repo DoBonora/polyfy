@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <gmpxx.h>
 
+#include "../include/Ideal.hpp"
 #include "../include/Monomial.hpp"
 #include "../include/Polynomial.hpp"
 #include "../include/Term.hpp"
@@ -293,6 +294,14 @@ TEST_F(MonomialTest, MulTest) {
 TEST_F(MonomialTest, AddTest) {
   ASSERT_TRUE(x + x == Monomial(2, Term(x_var)));
   ASSERT_TRUE(2 * (x + x) == (2 * x) + (2 * x));
+
+  Monomial a = x;
+  a += x;
+  ASSERT_TRUE(a == 2 * x);
+  a -= x;
+  ASSERT_TRUE(a == x);
+  a -= 2 * x;
+  ASSERT_TRUE(a == -x);
 }
 
 TEST_F(MonomialTest, ZeroTest) {
@@ -451,30 +460,122 @@ TEST_F(PolynomialTest, LessTest) {
   ASSERT_FALSE(v < v);
 }
 
-
-    // f = Polynomial({xyz, xy, xz, yz, x, y, z, unit});
-    // g = Polynomial({yz, y});
-    // h = Polynomial({x, unit});
-    // u = Polynomial({xyz, xy, xz, yz, 2 * x, y, z, unit});
-    // v = Polynomial({5 * xyz});
-    // zero = Polynomial();
-
 TEST_F(PolynomialTest, MulTest) {
-  ASSERT_TRUE(f*zero == zero);
+  ASSERT_TRUE(f * zero == zero);
   Polynomial unit_poly({unit});
-  ASSERT_TRUE(f*unit == f);
-  ASSERT_TRUE(f*unit_poly == f);
-  
+  ASSERT_TRUE(f * unit == f);
+  ASSERT_TRUE(f * unit_poly == f);
+
   Polynomial a({z, unit});
-  ASSERT_TRUE(a*y == g);
+  ASSERT_TRUE(a * y == g);
 
-  Polynomial large_prod({6*xyz, 6*yz, 2*xy, 2*y});
-  ASSERT_TRUE(large_prod == f*g);
+  Polynomial large_prod({6 * xyz, 6 * yz, 2 * xy, 2 * y});
+  ASSERT_TRUE(large_prod == f * g);
 
-  ASSERT_TRUE(f*(g*h) == (f*g)*h);
-  ASSERT_TRUE(u*(v*h) == (u*v)*h);
-  ASSERT_TRUE(f*g == g*f);
-  ASSERT_TRUE(u*v == v*u);
+  ASSERT_TRUE(f * (g * h) == (f * g) * h);
+  ASSERT_TRUE(u * (v * h) == (u * v) * h);
+  ASSERT_TRUE(f * g == g * f);
+  ASSERT_TRUE(u * v == v * u);
+
+  ASSERT_TRUE(2 * h == Polynomial({2 * x, 2 * unit}));
+
+  a *= y;
+  ASSERT_TRUE(a == g);
+  a *= y;
+  ASSERT_TRUE(a == g);
+}
+
+// f = Polynomial({xyz, xy, xz, yz, x, y, z, unit});
+// g = Polynomial({yz, y});
+// h = Polynomial({x, unit});
+// u = Polynomial({xyz, xy, xz, yz, 2 * x, y, z, unit});
+// v = Polynomial({5 * xyz});
+// zero = Polynomial();
+
+TEST_F(PolynomialTest, AddTest) {
+  ASSERT_TRUE(f + f == 2 * f);
+  ASSERT_TRUE(f + zero == f);
+  ASSERT_TRUE(f + g == g + f);
+  ASSERT_TRUE(u + v == v + u);
+  ASSERT_TRUE(f + (g + h) == (f + g) + h);
+  ASSERT_TRUE(u + (v + h) == (u + v) + h);
+
+  ASSERT_TRUE(g + h == Polynomial({x, yz, y, unit}));
+  ASSERT_TRUE(f + u == Polynomial({2 * xyz, 2 * xy, 2 * xz, 2 * yz, 3 * x,
+                                   2 * y, 2 * z, 2 * unit}));
+
+  ASSERT_TRUE(f + x == u);
+  ASSERT_TRUE(v + xyz == Polynomial({6 * xyz}));
+
+  ASSERT_TRUE(f - f == zero);
+  ASSERT_TRUE(u - f == Polynomial({x}));
+  ASSERT_TRUE(f - zero == f);
+  ASSERT_TRUE(2 * g - g == g);
+  ASSERT_TRUE(f + (-g) == f - g);
+  ASSERT_TRUE(zero - f == -f);
+
+  Polynomial a = f;
+  a += x;
+  ASSERT_TRUE(a == u);
+  a -= x;
+  ASSERT_TRUE(a == f);
+  a -= Polynomial({xy, xz, yz, x, y, z, unit});
+  ASSERT_TRUE(a == Polynomial({xyz}));
+  a += 4 * xyz;
+  ASSERT_TRUE(a == v);
+}
+TEST_F(PolynomialTest, DistTest) {
+  ASSERT_TRUE(f * (v + g) == (f * v) + (f * g));
+  ASSERT_TRUE((v + g) * f == (v * f) + (g * f));
+  ASSERT_TRUE((v - v) * f == zero);
+}
+
+/*----------------------------------------------------------*/
+
+class IdealTest : public ::testing::Test {
+
+public:
+  Ideal I;
+  /* x > y > z */
+  const uint32_t x_var = 2;
+  const uint32_t y_var = 1;
+  const uint32_t z_var = 0;
+  Monomial xyz, xy, xz, yz, x, y, z, unit;
+
+protected:
+  virtual void SetUp() {
+    xyz = Monomial(Term({x_var, y_var, z_var}));
+    xy = Monomial(Term({x_var, y_var}));
+    xz = Monomial(Term({x_var, z_var}));
+    yz = Monomial(Term({y_var, z_var}));
+    x = Monomial(Term(x_var));
+    y = Monomial(Term(y_var));
+    z = Monomial(Term(z_var));
+    unit = Monomial(Term());
+
+    I.add_variable("z");
+    I.add_variable("y");
+    I.add_variable("x");
+  };
+};
+
+TEST_F(IdealTest, ParseTest) {
+  Polynomial f = I.from_string("x");
+  ASSERT_TRUE(f == Polynomial({x}));
+  f = I.from_string("x + y + z");
+  ASSERT_TRUE(f == Polynomial({x,y,z}));
+  f = I.from_string("5*x*y*z + 14 * y - 3*x*y");
+  ASSERT_TRUE(f == Polynomial({5*xyz, 14*y, (-3)*xy}));
+  f = I.from_string("0");
+  ASSERT_TRUE(f == Polynomial());
+  f = I.from_string("-3x + 15y");
+  ASSERT_TRUE(f == Polynomial({-3*x, 15*y}));
+  f = I.from_string("5");
+  ASSERT_TRUE(f == Polynomial({5*unit}));
+  f = I.from_string("-1");
+  ASSERT_TRUE(f == Polynomial({-unit}));
+
+  EXPECT_ANY_THROW(I.from_string("x*y*z+w"));
 }
 
 /*----------------------------------------------------------*/

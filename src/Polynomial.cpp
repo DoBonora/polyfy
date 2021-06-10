@@ -47,23 +47,35 @@ Polynomial Polynomial::operator*(const Monomial &m) const {
   return Polynomial(new_monomials);
 }
 
+Polynomial Polynomial::operator*(int32_t factor) const {
+  std::map<Term, Monomial, std::greater<>> new_monomials;
+  for (auto [t, m] : monomials)
+    new_monomials[t] = factor * m;
+  return Polynomial(new_monomials);
+}
+
 Polynomial Polynomial::operator+(const Polynomial &other) const {
   std::map<Term, Monomial, std::greater<>> new_monomials;
   auto it1 = monomials.begin();
   auto it2 = other.monomials.begin();
 
-  for (; it1 != monomials.end() || it2 != monomials.end();) {
+  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
     while (it1 != monomials.end() && it1->first > it2->first) {
       new_monomials.insert(*it1);
       ++it1;
     }
+    if (it1 == monomials.end())
+      break;
 
-    while (it2 != monomials.end() && it2->first > it1->first) {
+    while (it2 != other.monomials.end() && it2->first > it1->first) {
       new_monomials.insert(*it2);
       ++it2;
     }
 
-    if (*it1 == *it2) {
+    if (it2 == other.monomials.end())
+      break;
+
+    if (it1->first == it2->first) {
       Monomial sum = it1->second + it2->second;
       if (!sum.is_zero())
         new_monomials[sum.t] = sum;
@@ -72,8 +84,20 @@ Polynomial Polynomial::operator+(const Polynomial &other) const {
       ++it2;
     } else {
       new_monomials.insert(*it1);
-      new_monomials.insert(*it2); // TODO: might insert too often?
+      ++it1;
+      // if(it2 != other.monomials.end())
+      //   new_monomials.insert(*it2); // TODO: might insert too often?
     }
+  }
+
+  while (it1 != monomials.end()) {
+    new_monomials[it1->first] = it1->second;
+    ++it1;
+  }
+
+  while (it2 != other.monomials.end()) {
+    new_monomials[it2->first] = it2->second;
+    ++it2;
   }
   return Polynomial(new_monomials);
 }
@@ -82,14 +106,15 @@ Polynomial Polynomial::operator+(const Monomial &m) const {
   std::map<Term, Monomial, std::greater<>> new_monomials;
   auto it = monomials.find(m.t);
 
+  new_monomials.insert(monomials.begin(), monomials.end());
   if (it != monomials.end()) {
     Monomial sum = it->second + m;
     if (!sum.is_zero())
       new_monomials[sum.t] = sum;
-  } else {
-    new_monomials[m.t] = m;
+    else
+      new_monomials.erase(sum.t);
   }
-  new_monomials.insert(monomials.begin(), monomials.end());
+
   return Polynomial(new_monomials);
 }
 
@@ -98,19 +123,24 @@ Polynomial Polynomial::operator-(const Polynomial &other) const {
   auto it1 = monomials.begin();
   auto it2 = other.monomials.begin();
 
-  for (; it1 != monomials.end() || it2 != monomials.end();) {
+  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
     while (it1 != monomials.end() && it1->first > it2->first) {
       new_monomials.insert(*it1);
       ++it1;
     }
+    if (it1 == monomials.end())
+      break;
 
-    while (it2 != monomials.end() && it2->first > it1->first) {
-      new_monomials.insert(*it2);
+    while (it2 != other.monomials.end() && it2->first > it1->first) {
+      new_monomials[it2->first] = -it2->second;
       ++it2;
     }
 
-    if (*it1 == *it2) {
-      Monomial diff = it1->second + it2->second;
+    if (it2 == other.monomials.end())
+      break;
+
+    if (it1->first == it2->first) {
+      Monomial diff = it1->second - it2->second;
       if (!diff.is_zero())
         new_monomials[diff.t] = diff;
 
@@ -118,8 +148,17 @@ Polynomial Polynomial::operator-(const Polynomial &other) const {
       ++it2;
     } else {
       new_monomials.insert(*it1);
-      new_monomials.insert(*it2); // TODO: might insert too often?
     }
+  }
+
+  while (it1 != monomials.end()) {
+    new_monomials[it1->first] = it1->second;
+    ++it1;
+  }
+
+  while (it2 != other.monomials.end()) {
+    new_monomials[it2->first] = -it2->second;
+    ++it2;
   }
   return Polynomial(new_monomials);
 }
@@ -135,31 +174,48 @@ Polynomial &Polynomial::operator*=(const Monomial &m) {
   return *this;
 }
 
+Polynomial Polynomial::operator*=(int32_t factor) {
+  for (auto [t, m] : monomials)
+    monomials[t] = factor * m;
+  return *this;
+}
+
 Polynomial &Polynomial::operator+=(const Polynomial &other) {
   auto it1 = monomials.begin();
   auto it2 = other.monomials.begin();
 
-  for (; it1 != monomials.end() || it2 != monomials.end();) {
+  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
     while (it1 != monomials.end() && it1->first > it2->first) {
       ++it1;
     }
+    if (it1 == monomials.end())
+      break;
 
-    while (it2 != monomials.end() && it2->first > it1->first) {
+    while (it2 != other.monomials.end() && it2->first > it1->first) {
       monomials.insert(*it2);
       ++it2;
     }
+    if (it2 == other.monomials.end())
+      break;
 
-    if (*it1 == *it2) {
+    if (it1->first == it2->first) {
       it1->second += it2->second;
-      if (it1->second.is_zero())
-        monomials.erase(it1++); // TODO: potential source of error
-
-      ++it1;
+      if (it1->second.is_zero()) {
+        auto temp = it1;
+        ++it1;
+        monomials.erase(temp); // TODO: potential source of error
+      } else {
+        ++it1;
+      }
       ++it2;
-    } else {
-      monomials.insert(*it2); // TODO: might insert too often?
     }
   }
+
+  while (it2 != other.monomials.end()) {
+    monomials[it2->first] = it2->second;
+    ++it2;
+  }
+
   return *this;
 }
 Polynomial &Polynomial::operator+=(const Monomial &m) {
@@ -169,7 +225,8 @@ Polynomial &Polynomial::operator+=(const Monomial &m) {
     if (it->second.is_zero())
       monomials.erase(it);
   } else {
-    monomials[m.t] = m;
+    if (m.coeff != 0)
+      monomials[m.t] = m;
   }
 
   return *this;
@@ -179,26 +236,36 @@ Polynomial &Polynomial::operator-=(const Polynomial &other) {
   auto it1 = monomials.begin();
   auto it2 = other.monomials.begin();
 
-  for (; it1 != monomials.end() || it2 != monomials.end();) {
+  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
     while (it1 != monomials.end() && it1->first > it2->first) {
       ++it1;
     }
+    if (it1 == monomials.end())
+      break;
 
-    while (it2 != monomials.end() && it2->first > it1->first) {
-      monomials.insert(*it2);
+    while (it2 != other.monomials.end() && it2->first > it1->first) {
+      monomials[it2->first] = -it2->second;
       ++it2;
     }
+    if (it2 == other.monomials.end())
+      break;
 
-    if (*it1 == *it2) {
+    if (it1->first == it2->first) {
       it1->second -= it2->second;
-      if (it1->second.is_zero())
-        monomials.erase(it1++); // TODO: potential source of error
-
-      ++it1;
+      if (it1->second.is_zero()) {
+        auto temp = it1;
+        it1++;
+        monomials.erase(temp); // TODO: potential source of error
+      } else {
+        ++it1;
+      }
       ++it2;
-    } else {
-      monomials.insert(*it2); // TODO: might insert too often?
     }
+  }
+
+  while (it2 != other.monomials.end()) {
+    monomials[it2->first] = -it2->second;
+    ++it2;
   }
   return *this;
 }
@@ -210,7 +277,8 @@ Polynomial &Polynomial::operator-=(const Monomial &m) {
     if (it->second.is_zero())
       monomials.erase(it);
   } else {
-    monomials[m.t] = m;
+    if (m.coeff != 0)
+      monomials[m.t] = m;
   }
 
   return *this;
@@ -267,3 +335,5 @@ Monomial Polynomial::lm() const { return monomials.begin()->second; }
 Term Polynomial::lt() const { return monomials.begin()->second.t; }
 
 mpz_class Polynomial::num_monomials() const { return monomials.size(); }
+
+Polynomial operator*(int32_t factor, const Polynomial &p) { return p * factor; }

@@ -35,6 +35,7 @@ public:
 
   Polynomial operator*(const Polynomial& other) const;
   Polynomial operator*(const Monomial& m) const;
+  Polynomial operator*(int32_t factor) const;
   Polynomial operator+(const Polynomial& other) const;
   Polynomial operator+(const Monomial& m) const;
   Polynomial operator-(const Polynomial& other) const;
@@ -43,6 +44,7 @@ public:
   
   Polynomial& operator*=(const Polynomial& other) ;
   Polynomial& operator*=(const Monomial& m) ;
+  Polynomial operator*=(int32_t factor);
   Polynomial& operator+=(const Polynomial& other) ;
   Polynomial& operator+=(const Monomial& m) ;
   Polynomial& operator-=(const Polynomial& other) ;
@@ -68,6 +70,7 @@ private:
   std::map<Term, Monomial, std::greater<>> monomials;
 };
 
+Polynomial operator*(int32_t factor, const Polynomial& p);
 
 #endif /* POLYNOMIAL_VERIFICATION_INCLUDE_POLYNOMIAL_HPP_ */
 

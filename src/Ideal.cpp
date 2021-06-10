@@ -1,12 +1,14 @@
 #include "../include/Ideal.hpp"
 #include "../include/Term.hpp"
 
-#include <regex>
 #include <gmpxx.h>
+#include <regex>
 
+#include <iostream>
 bool Ideal::add_variable(const std::string &var) {
   uint32_t ord = variables.size();
-  if (variables.find(var) != variables.end()) {
+
+  if (variables.find(var) == variables.end()) {
     variables[var] = ord;
     return true;
   }
@@ -14,43 +16,49 @@ bool Ideal::add_variable(const std::string &var) {
 }
 
 Polynomial Ideal::from_string(const std::string &s) const {
-  char delim = '+';
-
   Polynomial poly;
 
-  size_t last = 0;
-  size_t next = 0;
-  std::string monom_str;
-  while ((next = s.find(delim)) != std::string::npos) {
-    monom_str = s.substr(last, next - last);
-    
-    Monomial monom = monom_from_string(monom_str);
-    poly += monom;
-  }
-  Monomial monom = monom_from_string(monom_str);
-  poly += monom;
+  std::regex reg_first_mon("^[[:s:]]*([[:alnum:][:s:]\\*]+)");
 
+  std::smatch match;
+  auto pos = s.cbegin();
+  auto end = s.cend();
+  bool found = std::regex_search(pos, end, match, reg_first_mon);
+  if (found) {
+    Monomial m = monom_from_string(match[1]);
+    poly += m;
+    pos = match.suffix().first;
+  }
+
+  std::regex reg("([\\+\\-])[[:s:]]*([[:alnum:]\\*[:s:]]+)");
+  for (; std::regex_search(pos, end, match, reg); pos = match.suffix().first) {
+    int8_t sign = match[1] == '-' ? -1 : 1;
+    Monomial m = monom_from_string(match[2]);
+
+    poly += sign * m;
+  }
   return poly;
 }
 
-Monomial Ideal::monom_from_string(const std::string& s) const {
-  std::regex reg_coeff("^[\\-0-9][0-9]*");
+Monomial Ideal::monom_from_string(const std::string &s) const {
+  std::regex reg_coeff("^([\\-0-9][0-9]*)[[:s:]]*\\*?");
   std::smatch match;
   bool has_coeff = std::regex_search(s, match, reg_coeff);
 
   mpz_class coeff = 1;
-  if(has_coeff) {
-    coeff = std::stoi(match.str());
+  if (has_coeff) {
+    coeff = std::stoi(match[1]);
   }
 
   std::set<uint32_t, std::greater<uint32_t>> monom_vars;
-  
-  std::regex reg_vars("[a-z][[:alnum:]]*");
+
+  std::regex reg_vars("[[:alpha:]][[:alnum:]]*");
   auto pos = s.cbegin();
   auto end = s.cend();
-  for(; std::regex_search(pos, end, match, reg_vars); pos = match.suffix().first) {
+  for (; std::regex_search(pos, end, match, reg_vars);
+       pos = match.suffix().first) {
     auto res_it = variables.find(match.str());
-    if(res_it != variables.end()) {
+    if (res_it != variables.end()) {
       uint32_t var_ord = res_it->second;
       monom_vars.insert(var_ord);
     } else {
@@ -61,10 +69,9 @@ Monomial Ideal::monom_from_string(const std::string& s) const {
   return Monomial(coeff, Term(monom_vars));
 }
 
-Ideal::UndefinedVarException::UndefinedVarException(const std::string& var): var(var) {}
+Ideal::UndefinedVarException::UndefinedVarException(const std::string &var)
+    : var(var) {}
 
-const char* Ideal::UndefinedVarException::what() const noexcept {
+const char *Ideal::UndefinedVarException::what() const noexcept {
   return ("Ideal does not contain variable " + var).c_str();
 }
-
-
