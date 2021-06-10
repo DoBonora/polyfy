@@ -476,6 +476,7 @@ TEST_F(PolynomialTest, MulTest) {
   ASSERT_TRUE(f*g == g*f);
   ASSERT_TRUE(u*v == v*u);
 }
+
 /*----------------------------------------------------------*/
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
