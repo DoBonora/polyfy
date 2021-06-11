@@ -81,7 +81,11 @@ Polynomial Ideal::reduce(const Polynomial &p) {
   Polynomial rem = p;
 
   for(const Polynomial& g: generators) {
-    g.lead_reduce(rem);
+    while(g.can_lead_reduce(rem)) {
+      g.lead_reduce(rem);
+      if(rem == zero())
+        return rem;
+    }
   }
   
   return rem;
