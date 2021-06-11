@@ -49,14 +49,22 @@ public:
   bool operator>(const Monomial& other) const;
   bool operator>=(const Monomial& other) const;
   bool operator==(const Monomial& other) const;
+  bool operator!=(const Monomial& other) const;
 
   bool is_zero() const;
-  
+  bool is_one() const;
+
+  bool factor(const Monomial& other) const;
+  bool multiple(const Monomial& other) const; 
+ 
 protected:
 private:
   mpz_class coeff;
   Term t;
 
+  Monomial& operator*=(const mpz_class& i);
+  Monomial operator*(const mpz_class& i) const; 
+  
   friend class Polynomial;
 };
 

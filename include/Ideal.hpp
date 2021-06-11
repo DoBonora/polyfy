@@ -9,6 +9,7 @@
 #include "./Polynomial.hpp"
 #include "./Monomial.hpp"
 
+/* only supports lexicographical order for now */
 class Ideal
 {
 public:
@@ -36,12 +37,16 @@ public:
   Polynomial from_string(const std::string& s) const ;
 
   void add_generator(const Polynomial& p);
+  void add_generator(const std::string& s);
 
+  Polynomial reduce(const Polynomial& p);
+
+  Polynomial zero() const;
 protected:
 private:
   /* variables ordered from smallest to largest*/
   std::unordered_map<std::string, uint32_t> variables;
-  std::set<Polynomial> generators;
+  std::set<Polynomial, std::greater<>> generators;
 
   Monomial monom_from_string(const std::string& s) const;
 

@@ -311,6 +311,17 @@ TEST_F(MonomialTest, ZeroTest) {
   ASSERT_FALSE(unit.is_zero());
 }
 
+TEST_F(MonomialTest, DivisibleTest) {
+  ASSERT_TRUE(x.factor(xyz));
+  ASSERT_TRUE(xyz.multiple(x));
+  ASSERT_TRUE(y.factor(xyz));
+  ASSERT_FALSE(x.factor(y));
+  ASSERT_TRUE(unit.factor(x));
+  ASSERT_TRUE(unit.factor(unit));
+  ASSERT_TRUE(xyz.factor(xyz));
+  ASSERT_FALSE(xy.factor(yz));
+}
+
 /*----------------------------------------------------------*/
 
 class PolynomialTest : public ::testing::Test {
@@ -485,13 +496,6 @@ TEST_F(PolynomialTest, MulTest) {
   ASSERT_TRUE(a == g);
 }
 
-// f = Polynomial({xyz, xy, xz, yz, x, y, z, unit});
-// g = Polynomial({yz, y});
-// h = Polynomial({x, unit});
-// u = Polynomial({xyz, xy, xz, yz, 2 * x, y, z, unit});
-// v = Polynomial({5 * xyz});
-// zero = Polynomial();
-
 TEST_F(PolynomialTest, AddTest) {
   ASSERT_TRUE(f + f == 2 * f);
   ASSERT_TRUE(f + zero == f);
@@ -530,17 +534,54 @@ TEST_F(PolynomialTest, DistTest) {
   ASSERT_TRUE((v - v) * f == zero);
 }
 
+// f = Polynomial({xyz, xy, xz, yz, x, y, z, unit});
+// g = Polynomial({yz, y});
+// h = Polynomial({x, unit});
+// u = Polynomial({xyz, xy, xz, yz, 2 * x, y, z, unit});
+// v = Polynomial({5 * xyz});
+// zero = Polynomial();
+
+TEST_F(PolynomialTest, ReduceTest) {
+  ASSERT_TRUE(g.can_lead_reduce(f));
+  ASSERT_TRUE(f.lead_reducible_by(g));
+  ASSERT_TRUE(g.can_reduce(f));
+  ASSERT_TRUE(f.reducible_by(g));
+  Polynomial a({x, yz});
+  Polynomial b({y, unit});
+  ASSERT_FALSE(a.lead_reducible_by(b));
+  ASSERT_TRUE(a.reducible_by(b));
+  ASSERT_DEATH(f.reducible_by(zero), "");
+
+  a = f;
+  g.lead_reduce(a);
+  ASSERT_TRUE(a == Polynomial({xz, yz, x, y, z, unit}));
+
+  a = f;
+  f.lead_reduce(a);
+  ASSERT_TRUE(a == zero);
+
+  a = 2 * f;
+  f.lead_reduce(a);
+  ASSERT_TRUE(a == zero);
+
+  a = 5 * f;
+  b = 3 * f;
+  b.lead_reduce(a);
+  ASSERT_TRUE(a == zero);
+}
+
 /*----------------------------------------------------------*/
 
 class IdealTest : public ::testing::Test {
 
 public:
-  Ideal I;
+  Ideal I, C;
   /* x > y > z */
   const uint32_t x_var = 2;
   const uint32_t y_var = 1;
   const uint32_t z_var = 0;
   Monomial xyz, xy, xz, yz, x, y, z, unit;
+  Polynomial spec;
 
 protected:
   virtual void SetUp() {
@@ -556,6 +597,21 @@ protected:
     I.add_variable("z");
     I.add_variable("y");
     I.add_variable("x");
+
+    C.add_variable("a0");
+    C.add_variable("a1");
+    C.add_variable("b0");
+    C.add_variable("b1");
+    C.add_variable("l1");
+    C.add_variable("l2");
+    C.add_variable("l3");
+    C.add_variable("l5");
+    C.add_variable("s0");
+    C.add_variable("s1");
+    C.add_variable("s2");
+    C.add_variable("s3");
+
+    spec = C.from_string("8*s3+4*s2+2*s1+s0-4*a1*b1-2*a0*b1-2*a1*b0-a0*b0");
   };
 };
 
@@ -563,21 +619,48 @@ TEST_F(IdealTest, ParseTest) {
   Polynomial f = I.from_string("x");
   ASSERT_TRUE(f == Polynomial({x}));
   f = I.from_string("x + y + z");
-  ASSERT_TRUE(f == Polynomial({x,y,z}));
+  ASSERT_TRUE(f == Polynomial({x, y, z}));
   f = I.from_string("5*x*y*z + 14 * y - 3*x*y");
-  ASSERT_TRUE(f == Polynomial({5*xyz, 14*y, (-3)*xy}));
+  ASSERT_TRUE(f == Polynomial({5 * xyz, 14 * y, (-3) * xy}));
   f = I.from_string("0");
   ASSERT_TRUE(f == Polynomial());
   f = I.from_string("-3x + 15y");
-  ASSERT_TRUE(f == Polynomial({-3*x, 15*y}));
+  ASSERT_TRUE(f == Polynomial({-3 * x, 15 * y}));
   f = I.from_string("5");
-  ASSERT_TRUE(f == Polynomial({5*unit}));
+  ASSERT_TRUE(f == Polynomial({5 * unit}));
   f = I.from_string("-1");
   ASSERT_TRUE(f == Polynomial({-unit}));
 
   EXPECT_ANY_THROW(I.from_string("x*y*z+w"));
 }
 
+TEST_F(IdealTest, 2BitMultTest) {
+  C.add_generator("-s0+a0*b0");
+  C.add_generator("-l1+a1*b0");
+  C.add_generator("-l2+a0*b1");
+  C.add_generator("-l3+a1*b1");
+  C.add_generator("-s1+l2+l1-2*l2*l1");
+  C.add_generator("-l5+l1*l2");
+  C.add_generator("-s2+l3+l5-2*l3*l5");
+  C.add_generator("-s3+l5*l3");
+
+  Polynomial rem = C.reduce(spec);
+  ASSERT_TRUE(rem == C.zero());
+}
+
+TEST_F(IdealTest, 2BitMultTestBug) {
+  C.add_generator("-s0+a0*b0");
+  C.add_generator("-l1+a1*b0");
+  C.add_generator("-l2+a0*b1");
+  C.add_generator("-l3+a1*b1");
+  C.add_generator("-s1+l2+l1-l2*l1"); // BUG! OR instead of XOR
+  C.add_generator("-l5+l1*l2");
+  C.add_generator("-s2+l3+l5-2*l3*l5");
+  C.add_generator("-s3+l5*l3");
+
+  Polynomial rem = C.reduce(spec);
+  ASSERT_TRUE(rem != C.zero());
+}
 /*----------------------------------------------------------*/
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

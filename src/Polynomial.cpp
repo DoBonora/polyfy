@@ -1,5 +1,8 @@
 #include "../include/Polynomial.hpp"
 
+#include <algorithm>
+#include <gmpxx.h>
+#include <iterator>
 //! Default constructor
 Polynomial::Polynomial() : monomials() {}
 
@@ -35,6 +38,9 @@ Polynomial Polynomial::operator*(const Polynomial &other) const {
 }
 
 Polynomial Polynomial::operator*(const Monomial &m) const {
+  if(m.is_one())
+    return *this;
+  
   std::map<Term, Monomial, std::greater<>> new_monomials;
   for (auto [_, n] : monomials) {
     Monomial prod = n * m;
@@ -50,7 +56,7 @@ Polynomial Polynomial::operator*(const Monomial &m) const {
 Polynomial Polynomial::operator*(int32_t factor) const {
   std::map<Term, Monomial, std::greater<>> new_monomials;
   for (auto [t, m] : monomials)
-    new_monomials[t] = factor * m;
+    new_monomials[t] = m * factor;
   return Polynomial(new_monomials);
 }
 
@@ -219,6 +225,9 @@ Polynomial &Polynomial::operator+=(const Polynomial &other) {
   return *this;
 }
 Polynomial &Polynomial::operator+=(const Monomial &m) {
+  if(m.is_one())
+    return *this;
+  
   auto it = monomials.find(m.t);
   if (it != monomials.end()) {
     it->second += m;
@@ -329,11 +338,82 @@ bool Polynomial::operator==(const Polynomial &other) const {
   return it1 == monomials.end() && it2 == other.monomials.end();
 }
 
-mpz_class Polynomial::lc() const { return monomials.begin()->second.coeff; }
-Monomial Polynomial::lm() const { return monomials.begin()->second; }
+bool Polynomial::operator!=(const Polynomial& other) const{
+  return ! (*this == other);
+}
 
-Term Polynomial::lt() const { return monomials.begin()->second.t; }
+const mpz_class& Polynomial::lc() const { return monomials.begin()->second.coeff; }
+const Monomial& Polynomial::lm() const { return monomials.begin()->second; }
+
+const Term& Polynomial::lt() const { return monomials.begin()->second.t; }
 
 mpz_class Polynomial::num_monomials() const { return monomials.size(); }
+
+bool Polynomial::can_reduce(const Polynomial &other) const {
+  return other.reducible_by(*this);
+}
+
+bool Polynomial::reducible_by(const Polynomial &other) const {
+  for (auto [t, m] : monomials) {
+    if (other.lm().factor(m))
+      return true;
+  }
+  return false;
+}
+
+bool Polynomial::can_lead_reduce(const Polynomial &other) const {
+  return lm().factor(other.lm());
+}
+
+bool Polynomial::lead_reducible_by(const Polynomial &other) const {
+  return other.can_lead_reduce(*this);
+}
+
+bool Polynomial::lead_reduce(Polynomial &other) const {
+  if (!can_lead_reduce(other))
+    return false;
+
+  mpz_class lcm_ = lcm(lc(), other.lc());
+  mpz_class fac1 = lcm_ / lc();
+  mpz_class fac2 = lcm_ / other.lc();
+  
+  Term variable_fac;
+  std::set_difference(other.lt().variables.begin(), other.lt().variables.end(),
+                      lt().variables.begin(), lt().variables.end(),
+                      std::inserter(variable_fac.variables,
+                                    variable_fac.variables.begin()), std::greater<>());
+
+  other *= fac2;
+  other -= (*this) * Monomial(fac1, variable_fac);
+  return true;
+}
+/*changes other */
+bool Polynomial::reduce(Polynomial &other) const {
+  auto it = other.monomials.begin();
+  for (; !lm().factor(it->second); ++it)
+    ;
+
+  if (it == other.monomials.end())
+    return false;
+  return true;
+}
+
+Polynomial Polynomial::operator*(const mpz_class &i) const {
+  if(i == 1)
+    return *this;
+  
+  std::map<Term, Monomial, std::greater<>> new_monomials;
+  for (auto [t, m] : monomials)
+    new_monomials[t] = m * i;
+  return Polynomial(new_monomials);
+}
+Polynomial Polynomial::operator*=(const mpz_class &i) {
+  if(i == 1)
+    return *this;
+  
+  for (auto [t, m] : monomials)
+    monomials[t] = m * i;
+  return *this;
+}
 
 Polynomial operator*(int32_t factor, const Polynomial &p) { return p * factor; }

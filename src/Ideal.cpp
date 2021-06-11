@@ -4,7 +4,9 @@
 #include <gmpxx.h>
 #include <regex>
 
+#include <algorithm>
 #include <iostream>
+
 bool Ideal::add_variable(const std::string &var) {
   uint32_t ord = variables.size();
 
@@ -34,7 +36,7 @@ Polynomial Ideal::from_string(const std::string &s) const {
   for (; std::regex_search(pos, end, match, reg); pos = match.suffix().first) {
     int8_t sign = match[1] == '-' ? -1 : 1;
     Monomial m = monom_from_string(match[2]);
-
+    
     poly += sign * m;
   }
   return poly;
@@ -68,6 +70,24 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
 
   return Monomial(coeff, Term(monom_vars));
 }
+
+void Ideal::add_generator(const Polynomial &p) { generators.insert(p); }
+
+void Ideal::add_generator(const std::string &s) {
+  add_generator(from_string(s));
+}
+
+Polynomial Ideal::reduce(const Polynomial &p) {
+  Polynomial rem = p;
+
+  for(const Polynomial& g: generators) {
+    g.lead_reduce(rem);
+  }
+  
+  return rem;
+}
+
+Polynomial Ideal::zero() const { return Polynomial(); }
 
 Ideal::UndefinedVarException::UndefinedVarException(const std::string &var)
     : var(var) {}

@@ -50,6 +50,8 @@ public:
 protected:
 private:
   std::set<uint32_t, std::greater<uint32_t>> variables;
+  friend class Polynomial;
+  friend class Monomial;
 };
 
 
