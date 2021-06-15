@@ -1,3 +1,6 @@
 /.clang-format
 /Testing/
 /build/
+/TAGS
+*~
+/include/#config#
