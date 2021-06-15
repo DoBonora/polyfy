@@ -337,6 +337,7 @@ bool Polynomial::operator==(const Polynomial &other) const {
     return true;
   if((it1 == monomials.end() && it2 != other.monomials.end()) || (it2 == other.monomials.end() && it1 != monomials.end()))
     return false;
+  
   for (; it1->second == it2->second; ++it1, ++it2)
     ;
   return it1 == monomials.end() && it2 == other.monomials.end();
