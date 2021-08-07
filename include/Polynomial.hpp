@@ -3,82 +3,164 @@
 
 #include "../include/Monomial.hpp"
 #include "../include/Term.hpp"
+#include <functional>
 #include <gmpxx.h>
 #include <initializer_list>
+#include <list>
 #include <map>
 #include <string>
 
 class Polynomial {
+  using monoms_t = std::list<Monomial>;
+
 public:
+  using iterator = monoms_t::iterator;
+  using const_iterator = monoms_t::const_iterator;
+
   //! Default constructor
-  Polynomial();
+  Polynomial() = default;
 
-  Polynomial(const std::map<Term, Monomial, std::greater<>> &ms);
-  Polynomial(const std::initializer_list<Monomial> monomials);
+  template <typename... Args>
+  Polynomial(Monomial m, Args... ms) : monomials(sizeof...(Args) + 1) {
+    monomials.emplace_back(m);
+    (monomials.emplace_back(std::forward<Args>(ms)), ...);
+    sort_monomials();
+    aggregate_equal_monoms();
+  }
 
-  Polynomial(const Polynomial &other);
-  // //! Copy constructor
-  // Polynomial(const Polynomial &other);
-
-  // //! Move constructor
-  // Polynomial(Polynomial &&other) noexcept;
-
-  // //! Destructor
-  // virtual ~Polynomial() noexcept;
-
-  //! Copy assignment operator
-  Polynomial &operator=(const Polynomial &other);
-
-  // //! Move assignment operator
-  // Polynomial& operator=(Polynomial &&other) noexcept;
-
-  Polynomial operator*(const Polynomial &other) const;
-  Polynomial operator*(const Monomial &m) const;
-  Polynomial operator*(int32_t factor) const;
-  Polynomial operator+(const Polynomial &other) const;
-  Polynomial operator+(const Monomial &m) const;
-  Polynomial operator-(const Polynomial &other) const;
-  Polynomial operator-(const Monomial &m) const;
-
-  Polynomial &operator*=(const Polynomial &other);
+  Polynomial &operator*=(const Polynomial &rhs);
   Polynomial &operator*=(const Monomial &m);
-  Polynomial operator*=(int32_t factor);
-  Polynomial &operator+=(const Polynomial &other);
+  Polynomial &operator*=(const mpz_class &factor);
+  Polynomial &operator*=(int32_t constant);
+  Polynomial &operator+=(const Polynomial &rhs);
   Polynomial &operator+=(const Monomial &m);
-  Polynomial &operator-=(const Polynomial &other);
+  Polynomial &operator-=(const Polynomial &rhs);
   Polynomial &operator-=(const Monomial &m);
+  Polynomial &operator+=(const mpz_class &constant);
+  Polynomial &operator-=(const mpz_class &constant);
+  Polynomial &operator+=(int32_t constant);
+  Polynomial &operator-=(int32_t constant);
 
   Polynomial operator-() const;
-  /* only considers monomial ordering, coefficients are irrelevant*/
-  bool operator<(const Polynomial &other) const;
-  bool operator<=(const Polynomial &other) const;
-  bool operator>(const Polynomial &other) const;
-  bool operator>=(const Polynomial &other) const;
-  bool operator==(const Polynomial &other) const;
-  bool operator!=(const Polynomial& other) const;
-  const mpz_class& lc() const;
-  const Monomial& lm() const;
-  const Term& lt() const;
+  
+  const mpz_class &lc() const;
+  const Monomial &lm() const;
+  const Term &lt() const;
 
   mpz_class num_monomials() const;
 
-  bool can_reduce(const Polynomial &other) const;
-  bool reducible_by(const Polynomial &other) const;
+  // bool can_reduce(const Polynomial &rhs) const;
+  // bool reducible_by(const Polynomial &rhs) const;
 
-  bool can_lead_reduce(const Polynomial &other) const;
-  bool lead_reducible_by(const Polynomial &other) const;
+  bool can_lead_reduce(const Polynomial &rhs) const;
+  bool can_linear_lm_lead_reduce(const Polynomial &rhs) const;
+  bool lead_reducible_by(const Polynomial &rhs) const;
 
-  bool lead_reduce(Polynomial &other) const;
-  bool reduce(Polynomial &other) const;
+  bool lead_reduce(Polynomial &rhs) const;
+  // Assumes that this polynomials lm is linear
+  void linear_lm_lead_reduce(Polynomial &rhs) const;
+  //  bool reduce(Polynomial &rhs) const;
+
+  bool is_zero() const { return monomials.empty(); }
+
+  iterator begin() { return monomials.begin(); }
+  iterator end() { return monomials.end(); }
+  const_iterator begin() const { return monomials.cbegin(); }
+  const_iterator end() const { return monomials.cend(); }
+  const_iterator cbegin() const { return monomials.cbegin(); }
+  const_iterator cend() const { return monomials.cend(); }
 
 protected:
 private:
-  std::map<Term, Monomial, std::greater<>> monomials;
+  friend class Ideal;
+  std::list<Monomial> monomials;
+  //  std::vector<Monomial> monomials;
+  //  std::map<Term, Monomial, std::greater<>> monomials;
 
-  Polynomial operator*(const mpz_class& i) const; 
-  Polynomial operator*=(const mpz_class& i);
+  void sort_monomials();
+  void aggregate_equal_monoms();
+
+  static const mpz_class const_0;
+  static const Monomial monom_0;
 };
 
-Polynomial operator*(int32_t factor, const Polynomial &p);
+inline Polynomial operator*(Polynomial lhs, const Polynomial &rhs) {
+  lhs *= rhs;
+  return lhs;
+}
+inline Polynomial operator*(Polynomial lhs, const Monomial &rhs) {
+  lhs *= rhs;
+  return lhs;
+}
+inline Polynomial operator*(const Monomial &lhs, Polynomial rhs) {
+  rhs *= lhs;
+  return rhs;
+}
+inline Polynomial operator*(Polynomial p, const mpz_class &factor) {
+  p *= factor;
+  return p;
+}
+inline Polynomial operator*(const mpz_class &factor, Polynomial p) {
+  p *= factor;
+  return p;
+}
+
+inline Polynomial operator*(int32_t factor, Polynomial p) {
+  p *= factor;
+  return p;
+}
+
+inline Polynomial operator+(Polynomial lhs, const Polynomial &rhs) {
+  lhs += rhs;
+  return lhs;
+}
+inline Polynomial operator+(Polynomial lhs, const Monomial &rhs) {
+  lhs += rhs;
+  return lhs;
+}
+inline Polynomial operator+(const Monomial &lhs, Polynomial rhs) {
+  rhs += lhs;
+  return rhs;
+}
+inline Polynomial operator+(int32_t factor, Polynomial p) {
+  p += factor;
+  return p;
+}
+// Polynomial operator+(const Polynomial &p, const mpz_class& factor);
+// Polynomial operator+(const mpz_class& factor, const Polynomial &p);
+
+inline Polynomial operator-(Polynomial lhs, const Polynomial &rhs) {
+  lhs -= rhs;
+  return lhs;
+}
+inline Polynomial operator-(Polynomial lhs, const Monomial &rhs) {
+  lhs -= rhs;
+  return lhs;
+}
+inline Polynomial operator-(const Monomial &lhs, const Polynomial &rhs) {
+  Polynomial temp(lhs);
+  return temp - rhs;
+}
+inline Polynomial operator-(int32_t factor, const Polynomial &p) {
+  Polynomial temp(factor);
+  return temp - p;
+}
+
+inline Polynomial operator+(const Monomial &m1, const Monomial &m2) {
+  Polynomial temp(m1);
+  return temp + m2;
+}
+inline Polynomial operator-(const Monomial &m1, const Monomial &m2) {
+  Polynomial temp(m1);
+  return temp - m2;
+}
+
+bool operator<(const Polynomial &lhs, const Polynomial &rhs);
+bool operator<=(const Polynomial &lhs, const Polynomial &rhs);
+bool operator>(const Polynomial &lhs, const Polynomial &rhs);
+bool operator>=(const Polynomial &lhs, const Polynomial &rhs);
+bool operator==(const Polynomial &lhs, const Polynomial &rhs);
+bool operator!=(const Polynomial &lhs, const Polynomial &rhs);
+
 
 #endif /* POLYNOMIAL_VERIFICATION_INCLUDE_POLYNOMIAL_HPP_ */

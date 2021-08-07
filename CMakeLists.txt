@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.14...3.19)
 project(polyfy
         LANGUAGES CXX
         )
-
-
+      
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # configuration options
 option(DEPLOY "Configure for deployment")
-option(BUILD_TESTS "Also build tests for QMAP project")
+option(BUILD_TESTS "Also build tests for polyfy project")
 
 #build type settings
 set(default_build_type "Release")
@@ -27,9 +26,16 @@ find_package(GMP REQUIRED)
 add_library(gmp::gmpxx IMPORTED INTERFACE)
 add_library(gmp::libgmpxx IMPORTED INTERFACE)
 add_library(gmp::libgmp IMPORTED INTERFACE)
+#add_library(mockturtle IMPORTED INTERFACE)
 
+# install(TARGETS mockturtle EXPORT mockturtlepp-config DESTINATION include)
+
+# install(EXPORT websocketpp-config DESTINATION share/websocketpp/cmake)
 
 add_subdirectory(src)
+#add_subdirectory(lib)
+add_subdirectory(mockturtle-master/include)
+add_subdirectory(mockturtle-master/lib)
 
 # add test code
 if (BUILD_TESTS)

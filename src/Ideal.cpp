@@ -1,17 +1,24 @@
 #include "../include/Ideal.hpp"
 #include "../include/Term.hpp"
+#include "./Utils.hpp"
+#include <gmp.h>
 
+#include <bits/stdint-intn.h>
 #include <gmpxx.h>
 #include <regex>
 
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 bool Ideal::add_variable(const std::string &var) {
-  uint32_t ord = variables.size();
+  int32_t ord = variables.size();
 
   if (variables.find(var) == variables.end()) {
     variables[var] = ord;
+    to_name[ord] = var;
     return true;
   }
   return false;
@@ -20,7 +27,7 @@ bool Ideal::add_variable(const std::string &var) {
 Polynomial Ideal::from_string(const std::string &s) const {
   Polynomial poly;
 
-  std::regex reg_first_mon("^[[:s:]]*([[:alnum:][:s:]\\*]+)");
+  static std::regex reg_first_mon("^[[:s:]]*([[:alnum:][:s:]\\*]+)");
 
   std::smatch match;
   auto pos = s.cbegin();
@@ -32,7 +39,7 @@ Polynomial Ideal::from_string(const std::string &s) const {
     pos = match.suffix().first;
   }
 
-  std::regex reg("([\\+\\-])[[:s:]]*([[:alnum:]\\*[:s:]]+)");
+  static std::regex reg("([\\+\\-])[[:s:]]*([[:alnum:]\\*[:s:]]+)");
   for (; std::regex_search(pos, end, match, reg); pos = match.suffix().first) {
     int8_t sign = match[1] == '-' ? -1 : 1;
     Monomial m = monom_from_string(match[2]);
@@ -43,7 +50,7 @@ Polynomial Ideal::from_string(const std::string &s) const {
 }
 
 Monomial Ideal::monom_from_string(const std::string &s) const {
-  std::regex reg_coeff("^([\\-0-9][0-9]*)[[:s:]]*\\*?");
+  static std::regex reg_coeff("^([\\-0-9][0-9]*)[[:s:]]*\\*?");
   std::smatch match;
   bool has_coeff = std::regex_search(s, match, reg_coeff);
 
@@ -52,7 +59,7 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
     coeff = std::stoi(match[1]);
   }
 
-  std::set<uint32_t, std::greater<uint32_t>> monom_vars;
+  std::set<int32_t, std::greater<int32_t>> monom_vars;
 
   std::regex reg_vars("[[:alpha:]][[:alnum:]]*");
   auto pos = s.cbegin();
@@ -61,7 +68,7 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
        pos = match.suffix().first) {
     auto res_it = variables.find(match.str());
     if (res_it != variables.end()) {
-      uint32_t var_ord = res_it->second;
+      int32_t var_ord = res_it->second;
       monom_vars.insert(var_ord);
     } else {
       throw UndefinedVarException(match.str());
@@ -79,10 +86,13 @@ void Ideal::add_generator(const std::string &s) {
 
 Polynomial Ideal::reduce(const Polynomial &p) {
   Polynomial rem = p;
-
+  
   for (const Polynomial &g : generators) {
     while (g.can_lead_reduce(rem)) {
-      g.lead_reduce(rem);
+      // std::cout << to_string(rem) << "\n";
+      // std::cout << to_string(g) << "\n\n";
+
+      g.linear_lm_lead_reduce(rem);
       if (rem == zero())
         return rem;
     }
@@ -93,9 +103,27 @@ Polynomial Ideal::reduce(const Polynomial &p) {
 
 Polynomial Ideal::zero() const { return Polynomial(); }
 
-Ideal::UndefinedVarException::UndefinedVarException(const std::string &var)
-    : var(var) {}
+std::string Ideal::to_string(const Polynomial &poly) const {
+  if (poly.is_zero())
+    return "0";
+  std::string poly_str = "";
+  for (auto &m : poly.monomials) {
+    if (m.coeff >= 0)
+      poly_str += "+";
 
-const char *Ideal::UndefinedVarException::what() const noexcept {
-  return ("Ideal does not contain variable " + var).c_str();
+    poly_str += m.coeff.get_str() + "*";
+    for (auto var : m.t.variables) {
+      poly_str += to_name.at(var) + "*";
+    }
+    if (poly_str.size() >= 1)
+      poly_str[poly_str.size() - 1] = ' ';
+  }
+  if (poly_str.size() >= 1)
+    poly_str.resize(poly_str.size() - 1);
+  return poly_str;
+}
+
+void Ideal::print_generators() const {
+  for (auto g : generators)
+    std::cout << to_string(g) << "\n";
 }

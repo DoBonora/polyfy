@@ -1,0 +1,70 @@
+Simple SCA/backward rewriting
+=============================
+
+Date: 2021-06-09
+Author: Daniel Große, daniel.grosse@jku.at
+Purpose of this file: Some intial notes for SCA-based verification
+
+1. Benchmarks
+   GenMul at: www.sca-verification.org/genmul
+   Simple mul architecture: SP, AR, RC and we consider unsigned multipliers
+   GenMul generates Verilog, but with hierarchy
+   Next Step: Verilog -> A) flattened gate _or_ B) AIG
+
+A)  Generating flattened Verilog (gate-level netlist)
+Yosys:
+read_verilog circuit.v
+hierarchy -check -auto-top
+flatten
+clean -purge
+proc; opt
+techmap; opt
+clean -purge
+write_verilog -noattr circuit_flattened.v
+
+B)
+Generating AIG
+
+Yosys:
+read_verilog circuit.v
+hierarchy -check -auto-top
+flatten
+clean -purge
+proc; opt
+techmap; opt
+clean -purge
+write_blif circuit.blif
+
+abc:
+read circuit.blif
+strash
+write_aiger circuit.aig
+
+
+2. Multiplier Specification
+   
+   unsigned: 8*Z_3 + 4*Z_2 + 2*Z_1 + Z_0 - (2*a_1 + a_0)*(2*b_1 + b_0) 
+   spec differs in case of signed (see revsca journal)
+
+
+3. Create gate-level netlist parser _or_
+   use AIGs, e.g. library for reading AIGs: https://github.com/lsils/mockturtle
+
+
+4. Data structure
+    poly = SUM of monomials with coefficients
+	 coefficients can become larger than 64bit 
+	 => GMP library https://gmplib.org/ or similar
+	
+	
+5. Backward rewriting: 
+    * let us assume we want to substitute variable x in (current) specification polynomial SP_i
+	* assume x is output of or gate, so create OR polynomial: x = a+b-a*b   (with a,b new variables)
+	* now substitute x in SP_i, main steps needed:
+	  a) find all occurrences of x 
+	  b) substitute  (also use y^n -> y since Boolean)
+	  c) multiply out
+	  d) simplify (costly step: find same monomials efficiently)
+	  
+	* remainder check: equals 0, if no substitution is possible any more or not
+	  

@@ -2,423 +2,287 @@
 
 #include <algorithm>
 #include <gmpxx.h>
+#include <iostream>
 #include <iterator>
-//! Default constructor
-Polynomial::Polynomial() : monomials() {}
 
-Polynomial::Polynomial(const std::map<Term, Monomial, std::greater<>> &ms)
-    : monomials(ms) {}
-
-Polynomial::Polynomial(const std::initializer_list<Monomial> monoms) {
-  for (auto m : monoms)
-    monomials[m.t] = m;
-}
-
-Polynomial::Polynomial(const Polynomial &other) : monomials(other.monomials) {}
-
-Polynomial &Polynomial::operator=(const Polynomial &other) {
-  monomials = other.monomials;
-  return *this;
-}
-
-Polynomial Polynomial::operator*(const Polynomial &other) const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-
-  for (auto [_, m] : other.monomials) {
-    for (auto [_, n] : monomials) {
-      Monomial prod = n * m;
-      auto it = new_monomials.find(prod.t);
-      if (it != new_monomials.end())
-        new_monomials[prod.t] = it->second + prod;
-      else
-        new_monomials[prod.t] = prod;
-    }
-  }
-  return Polynomial(new_monomials);
-}
-
-Polynomial Polynomial::operator*(const Monomial &m) const {
-  if(m.is_one())
-    return *this;
-  
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  for (auto [_, n] : monomials) {
-    Monomial prod = n * m;
-    auto it = new_monomials.find(prod.t);
-    if (it != new_monomials.end())
-      new_monomials[prod.t] = it->second + prod;
-    else
-      new_monomials[prod.t] = prod;
-  }
-  return Polynomial(new_monomials);
-}
-
-Polynomial Polynomial::operator*(int32_t factor) const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  for (auto [t, m] : monomials)
-    new_monomials[t] = m * factor;
-  return Polynomial(new_monomials);
-}
-
-Polynomial Polynomial::operator+(const Polynomial &other) const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  auto it1 = monomials.begin();
-  auto it2 = other.monomials.begin();
-
-  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
-    while (it1 != monomials.end() && it1->first > it2->first) {
-      new_monomials.insert(*it1);
-      ++it1;
-    }
-    if (it1 == monomials.end())
-      break;
-
-    while (it2 != other.monomials.end() && it2->first > it1->first) {
-      new_monomials.insert(*it2);
-      ++it2;
-    }
-
-    if (it2 == other.monomials.end())
-      break;
-
-    if (it1->first == it2->first) {
-      Monomial sum = it1->second + it2->second;
-      if (!sum.is_zero())
-        new_monomials[sum.t] = sum;
-
-      ++it1;
-      ++it2;
-    } else {
-      new_monomials.insert(*it1);
-      ++it1;
-      // if(it2 != other.monomials.end())
-      //   new_monomials.insert(*it2); // TODO: might insert too often?
-    }
-  }
-
-  while (it1 != monomials.end()) {
-    new_monomials[it1->first] = it1->second;
-    ++it1;
-  }
-
-  while (it2 != other.monomials.end()) {
-    new_monomials[it2->first] = it2->second;
-    ++it2;
-  }
-  return Polynomial(new_monomials);
-}
-
-Polynomial Polynomial::operator+(const Monomial &m) const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  auto it = monomials.find(m.t);
-
-  new_monomials.insert(monomials.begin(), monomials.end());
-  if (it != monomials.end()) {
-    Monomial sum = it->second + m;
-    if (!sum.is_zero())
-      new_monomials[sum.t] = sum;
-    else
-      new_monomials.erase(sum.t);
-  }
-
-  return Polynomial(new_monomials);
-}
-
-Polynomial Polynomial::operator-(const Polynomial &other) const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  auto it1 = monomials.begin();
-  auto it2 = other.monomials.begin();
-
-  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
-    while (it1 != monomials.end() && it1->first > it2->first) {
-      new_monomials.insert(*it1);
-      ++it1;
-    }
-    if (it1 == monomials.end())
-      break;
-
-    while (it2 != other.monomials.end() && it2->first > it1->first) {
-      new_monomials[it2->first] = -it2->second;
-      ++it2;
-    }
-
-    if (it2 == other.monomials.end())
-      break;
-
-    if (it1->first == it2->first) {
-      Monomial diff = it1->second - it2->second;
-      if (!diff.is_zero())
-        new_monomials[diff.t] = diff;
-
-      ++it1;
-      ++it2;
-    } else {
-      new_monomials.insert(*it1);
-    }
-  }
-
-  while (it1 != monomials.end()) {
-    new_monomials[it1->first] = it1->second;
-    ++it1;
-  }
-
-  while (it2 != other.monomials.end()) {
-    new_monomials[it2->first] = -it2->second;
-    ++it2;
-  }
-  return Polynomial(new_monomials);
-}
+const mpz_class Polynomial::const_0 = 0;
+const Monomial Polynomial::monom_0 = Monomial();
 
 // TODO: better way than to just instantiate a new polynomial?
-Polynomial &Polynomial::operator*=(const Polynomial &other) {
-  (*this) = (*this) * other;
+Polynomial &Polynomial::operator*=(const Polynomial &rhs) {
+  monoms_t prod;
+  if (rhs.monomials.empty()) {
+    monomials.clear();
+    return *this;
+  }
+  // TODO: can this be more efficient?
+  for (auto &m : monomials) {
+    for (auto &n : rhs.monomials) {
+      prod.emplace_back(m.coeff * n.coeff, m.t * n.t);
+    }
+  }
+  monomials = prod;
+  sort_monomials();
+  aggregate_equal_monoms();
   return *this;
 }
 
 Polynomial &Polynomial::operator*=(const Monomial &m) {
-  (*this) = (*this) * m;
-  return *this;
-}
-
-Polynomial Polynomial::operator*=(int32_t factor) {
-  for (auto [t, m] : monomials)
-    monomials[t] = factor * m;
-  return *this;
-}
-
-Polynomial &Polynomial::operator+=(const Polynomial &other) {
-  auto it1 = monomials.begin();
-  auto it2 = other.monomials.begin();
-
-  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
-    while (it1 != monomials.end() && it1->first > it2->first) {
-      ++it1;
-    }
-    if (it1 == monomials.end())
-      break;
-
-    while (it2 != other.monomials.end() && it2->first > it1->first) {
-      monomials.insert(*it2);
-      ++it2;
-    }
-    if (it2 == other.monomials.end())
-      break;
-
-    if (it1->first == it2->first) {
-      it1->second += it2->second;
-      if (it1->second.is_zero()) {
-        auto temp = it1;
-        ++it1;
-        monomials.erase(temp); // TODO: potential source of error
-      } else {
-        ++it1;
-      }
-      ++it2;
-    }
-  }
-
-  while (it2 != other.monomials.end()) {
-    monomials[it2->first] = it2->second;
-    ++it2;
-  }
-
-  return *this;
-}
-Polynomial &Polynomial::operator+=(const Monomial &m) {
-  if(m.is_one())
+  if (m.is_one())
     return *this;
-  
-  auto it = monomials.find(m.t);
-  if (it != monomials.end()) {
-    it->second += m;
-    if (it->second.is_zero())
-      monomials.erase(it);
-  } else {
-    if (m.coeff != 0)
-      monomials[m.t] = m;
+  if (m.is_zero() || this->is_zero()) {
+    monomials.clear();
+    return *this;
   }
+  return (*this) *= Polynomial(m);
+}
+
+Polynomial &Polynomial::operator*=(const mpz_class &factor) {
+  if (factor == 1)
+    return *this;
+
+  if (factor == 0) {
+    monomials.clear();
+    return *this;
+  }
+
+  for (auto &m : monomials)
+    m *= factor;
 
   return *this;
 }
 
-Polynomial &Polynomial::operator-=(const Polynomial &other) {
-  auto it1 = monomials.begin();
-  auto it2 = other.monomials.begin();
+Polynomial &Polynomial::operator*=(int32_t constant) {
+  return (*this) *= mpz_class(constant);
+}
 
-  for (; it1 != monomials.end() && it2 != other.monomials.end();) {
-    while (it1 != monomials.end() && it1->first > it2->first) {
-      ++it1;
+Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
+  auto m = monomials.begin();
+  auto n = rhs.monomials.begin();
+
+  while (m != monomials.end() && n != rhs.monomials.end()) {
+    while (m != monomials.end() && m->t > n->t) {
+      ++m;
     }
-    if (it1 == monomials.end())
+
+    if (m == monomials.end())
       break;
 
-    while (it2 != other.monomials.end() && it2->first > it1->first) {
-      monomials[it2->first] = -it2->second;
-      ++it2;
+    while (n != rhs.monomials.end() && n->t > m->t) {
+      monomials.insert(m, *n);
+      ++n;
     }
-    if (it2 == other.monomials.end())
+
+    if (n == rhs.monomials.end())
       break;
 
-    if (it1->first == it2->first) {
-      it1->second -= it2->second;
-      if (it1->second.is_zero()) {
-        auto temp = it1;
-        it1++;
-        monomials.erase(temp); // TODO: potential source of error
-      } else {
-        ++it1;
-      }
-      ++it2;
+    if (m->t == n->t) {
+      m->coeff += n->coeff;
+      if (m->is_zero())
+        m = monomials.erase(m);
+      ++n;
     }
   }
 
-  while (it2 != other.monomials.end()) {
-    monomials[it2->first] = -it2->second;
-    ++it2;
+  for (; n != rhs.monomials.end(); ++n) {
+    monomials.push_back(*n);
   }
   return *this;
 }
 
-Polynomial &Polynomial::operator-=(const Monomial &m) {
-  auto it = monomials.find(m.t);
-  if (it != monomials.end()) {
-    it->second -= m;
-    if (it->second.is_zero())
-      monomials.erase(it);
-  } else {
-    if (m.coeff != 0)
-      monomials[m.t] = m;
+Polynomial &Polynomial::operator+=(const Monomial &m) {
+  Polynomial p(m);
+
+  return *this += p;
+}
+
+// Implemented explicitly to avoid two traversals of list
+Polynomial &Polynomial::operator-=(const Polynomial &rhs) {
+  auto m = monomials.begin();
+  auto n = rhs.monomials.begin();
+
+  while (m != monomials.end() && n != rhs.monomials.end()) {
+    while (m != monomials.end() && m->t > n->t) {
+      ++m;
+    }
+
+    if (m == monomials.end())
+      break;
+
+    while (n != rhs.monomials.end() && n->t > m->t) {
+      monomials.insert(m, -*n);
+      ++n;
+    }
+
+    if (n == rhs.monomials.end())
+      break;
+
+    if (m->t == n->t) {
+      m->coeff -= n->coeff;
+      if (m->is_zero())
+        m = monomials.erase(m);
+      ++n;
+    }
   }
 
+  for (; n != rhs.monomials.end(); ++n) {
+    monomials.push_back(-*n);
+  }
   return *this;
+}
+
+Polynomial &Polynomial::operator-=(const Monomial &m) { return *this += (-m); }
+
+Polynomial &Polynomial::operator+=(int32_t constant) {
+  return (*this) += mpz_class(constant);
+}
+
+Polynomial &Polynomial::operator-=(int32_t constant) {
+  return (*this) -= mpz_class(constant);
 }
 
 Polynomial Polynomial::operator-() const {
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  for (auto [t, m] : monomials)
-    new_monomials[t] = -m;
-
-  return Polynomial(new_monomials);
-}
-/* only considers monomial ordering, coefficients are irrelevant*/
-bool Polynomial::operator<(const Polynomial &other) const {
-  return other > (*this);
+  Polynomial p;
+  //  p.monomials.resize(monomials.size());
+  for (const Monomial &m : *this)
+    p.monomials.push_back(-m);
+  return p;
 }
 
-bool Polynomial::operator<=(const Polynomial &other) const {
-  return other >= (*this);
+Polynomial &Polynomial::operator+=(const mpz_class &constant) {
+  return (*this) += Monomial(constant);
 }
 
-bool Polynomial::operator>(const Polynomial &other) const {
-  auto it1 = monomials.begin(), it2 = other.monomials.begin();
-  for (; it1 != monomials.end() && it2 != other.monomials.end() &&
-         it1->second == it2->second;
-       ++it1, ++it2)
+Polynomial &Polynomial::operator-=(const mpz_class &constant) {
+  return *this -= Monomial(constant);
+}
+
+bool operator<(const Polynomial &lhs, const Polynomial &rhs) {
+  return rhs > lhs;
+}
+
+bool operator<=(const Polynomial &lhs, const Polynomial &rhs) {
+  return rhs >= lhs;
+}
+
+bool operator>(const Polynomial &lhs, const Polynomial &rhs) {
+  auto m = lhs.begin(), n = rhs.begin();
+  for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
     ;
-  return (it1 != monomials.end() && it2 == other.monomials.end()) ||
-         (it1 != monomials.end() && it2 != other.monomials.end() &&
-          it1->second > it2->second);
+
+  return (m != lhs.end() && n == rhs.end()) ||
+         (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
-bool Polynomial::operator>=(const Polynomial &other) const {
-  auto it1 = monomials.begin(), it2 = other.monomials.begin();
-  for (; it1 != monomials.end() && it2 != other.monomials.end() &&
-         it1->second == it2->second;
-       ++it1, ++it2)
+bool operator>=(const Polynomial &lhs, const Polynomial &rhs) {
+  auto m = lhs.begin(), n = rhs.begin();
+  for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
     ;
-  return (it2 == other.monomials.end()) ||
-         (it1 != monomials.end() && it2 != other.monomials.end() &&
-          it1->second >= it2->second);
+
+  return (m == lhs.end() && n == rhs.end()) ||
+         (m != lhs.end() && n == rhs.end()) ||
+         (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
-bool Polynomial::operator==(const Polynomial &other) const {
-  auto it1 = monomials.begin(), it2 = other.monomials.begin();
-  if(it1 == monomials.end() && it2 == other.monomials.end())
-    return true;
-  if((it1 == monomials.end() && it2 != other.monomials.end()) || (it2 == other.monomials.end() && it1 != monomials.end()))
-    return false;
-  
-  for (; it1->second == it2->second; ++it1, ++it2)
+bool operator==(const Polynomial &lhs, const Polynomial &rhs) {
+  auto m = lhs.begin(), n = rhs.begin();
+  for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
     ;
-  return it1 == monomials.end() && it2 == other.monomials.end();
+
+  return (m == lhs.end() && n == rhs.end());
 }
 
-bool Polynomial::operator!=(const Polynomial& other) const{
-  return ! (*this == other);
+bool operator!=(const Polynomial &lhs, const Polynomial &rhs) {
+  return !(lhs == rhs);
 }
 
-const mpz_class& Polynomial::lc() const { return monomials.begin()->second.coeff; }
-const Monomial& Polynomial::lm() const { return monomials.begin()->second; }
+const mpz_class &Polynomial::lc() const {
+  if (this->is_zero())
+    return monom_0.coeff;
+  return monomials.begin()->coeff;
+}
 
-const Term& Polynomial::lt() const { return monomials.begin()->second.t; }
+const Monomial &Polynomial::lm() const {
+  if (this->is_zero())
+    return monom_0;
+  return *monomials.begin();
+}
+
+const Term &Polynomial::lt() const {
+  if (this->is_zero())
+    return monom_0.t;
+  return monomials.begin()->t;
+}
 
 mpz_class Polynomial::num_monomials() const { return monomials.size(); }
 
-bool Polynomial::can_reduce(const Polynomial &other) const {
-  return other.reducible_by(*this);
+// bool Polynomial::can_reduce(const Polynomial &rhs) const {
+//   return rhs.reducible_by(*this);
+// }
+
+// bool Polynomial::reducible_by(const Polynomial &rhs) const {
+//   for (auto [t, m] : monomials) {
+//     if (rhs.lm().factor(m))
+//       return true;
+//   }
+
+//   return false;
+// }
+
+bool Polynomial::can_lead_reduce(const Polynomial &rhs) const {
+  return lm().factor(rhs.lm());
 }
 
-bool Polynomial::reducible_by(const Polynomial &other) const {
-  for (auto [t, m] : monomials) {
-    if (other.lm().factor(m))
-      return true;
-  }
-  return false;
+bool Polynomial::lead_reducible_by(const Polynomial &rhs) const {
+  return rhs.can_lead_reduce(*this);
 }
 
-bool Polynomial::can_lead_reduce(const Polynomial &other) const {
-  return lm().factor(other.lm());
-}
-
-bool Polynomial::lead_reducible_by(const Polynomial &other) const {
-  return other.can_lead_reduce(*this);
-}
-
-bool Polynomial::lead_reduce(Polynomial &other) const {
-  if (!can_lead_reduce(other))
+bool Polynomial::lead_reduce(Polynomial &rhs) const {
+  if (!can_lead_reduce(rhs))
     return false;
 
-  mpz_class lcm_ = lcm(lc(), other.lc());
+  mpz_class lcm_ = lcm(lc(), rhs.lc());
   mpz_class fac1 = lcm_ / lc();
-  mpz_class fac2 = lcm_ / other.lc();
-  
+  mpz_class fac2 = lcm_ / rhs.lc();
   Term variable_fac;
-  std::set_difference(other.lt().variables.begin(), other.lt().variables.end(),
-                      lt().variables.begin(), lt().variables.end(),
-                      std::inserter(variable_fac.variables,
-                                    variable_fac.variables.begin()), std::greater<>());
+  std::set_difference(
+      rhs.lt().variables.begin(), rhs.lt().variables.end(),
+      lt().variables.begin(), lt().variables.end(),
+      std::inserter(variable_fac.variables, variable_fac.variables.begin()),
+      std::greater<>());
 
-  other *= fac2;
-  other -= (*this) * Monomial(fac1, variable_fac);
-  return true;
-}
-/*changes other */
-bool Polynomial::reduce(Polynomial &other) const {
-  auto it = other.monomials.begin();
-  for (; !lm().factor(it->second); ++it)
-    ;
-
-  if (it == other.monomials.end())
-    return false;
+  rhs *= fac2;
+  rhs -= (*this) * Monomial(fac1, variable_fac);
   return true;
 }
 
-Polynomial Polynomial::operator*(const mpz_class &i) const {
-  if(i == 1)
-    return *this;
-  
-  std::map<Term, Monomial, std::greater<>> new_monomials;
-  for (auto [t, m] : monomials)
-    new_monomials[t] = m * i;
-  return Polynomial(new_monomials);
-}
-Polynomial Polynomial::operator*=(const mpz_class &i) {
-  if(i == 1)
-    return *this;
-  
-  for (auto [t, m] : monomials)
-    monomials[t] = m * i;
-  return *this;
+void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
+  Term fac_to_lcm(rhs.lt());
+  fac_to_lcm.variables.erase(*rhs.lt().variables.begin());
+  if (this->lc() > 0)
+    rhs -= (*this) * fac_to_lcm * rhs.lc();
+  else
+    rhs += (*this) * fac_to_lcm * rhs.lc();
 }
 
-Polynomial operator*(int32_t factor, const Polynomial &p) { return p * factor; }
+void Polynomial::sort_monomials() {
+  monomials.sort(
+      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+}
+
+void Polynomial::aggregate_equal_monoms() {
+  for (auto m = monomials.begin(); m != monomials.end();) {
+    auto next = std::next(m);
+    while (next != monomials.end() && m->t == next->t) {
+      next->coeff += m->coeff;
+      monomials.erase(m);
+      m = next;
+      next = std::next(next);
+    }
+    if (m->coeff == 0) {
+      m = monomials.erase(m);
+    } else {
+      m++;
+    }
+  }
+}

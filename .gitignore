@@ -4,3 +4,8 @@
 /TAGS
 *~
 /include/#config#
+/benchmarks/
+/include/mockturtle
+/mockturtle-master/
+/lib/
+/spdlog-1.x/
