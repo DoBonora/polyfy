@@ -73,17 +73,8 @@ std::vector<std::string> Circuit::get_vars() const {
 }
 
 void Circuit::check_var(const std::string &s) {
-  for (auto &v : gate_vars)
-    if (s == v)
-      return;
-
-  for (auto &v : input_vars)
-    if (s == v)
-      return;
-
-  for (auto &v : output_vars)
-    if (s == v)
-      return;
+  if(var_lookup.find(s) != var_lookup.end())
+    return;
 
   throw UndefinedVarException(s);
 }
@@ -120,7 +111,7 @@ Circuit parse_aig(const std::string &file) {
     } else {
       varname = "l" + std::to_string(node);
       to_string[node] = varname;
-      circuit.add_input(varname);
+      circuit.add_gate(varname);
     }
   });
 

@@ -8,6 +8,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # configuration options
 option(DEPLOY "Configure for deployment")
 option(BUILD_TESTS "Also build tests for polyfy project")
+option(PERF "Add debug info for performance analysis tools")
 
 #build type settings
 set(default_build_type "Release")

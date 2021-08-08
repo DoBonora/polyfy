@@ -7,11 +7,13 @@ add_library(${PROJECT_NAME}_lib
   ${${PROJECT_NAME}_SOURCE_DIR}/include/Term.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/Ideal.cpp
   ${${PROJECT_NAME}_SOURCE_DIR}/include/Ideal.hpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Utils.hpp
   )
 
 add_library(${PROJECT_NAME}_parse_lib
   ${CMAKE_CURRENT_SOURCE_DIR}/Parse.cpp
   ${${PROJECT_NAME}_SOURCE_DIR}/include/Parse.hpp
+  ${${PROJECT_NAME}_SOURCE_DIR}/include/Utils.hpp
   )
 
 # set include directories
@@ -43,7 +45,8 @@ endif()
 if(MSVC)
 	target_compile_options(${PROJECT_NAME}_parse_lib PUBLIC /utf-8)
 else()
-        target_compile_options(${PROJECT_NAME}_parse_lib PUBLIC -Wall -Wextra $<$<CONFIG:DEBUG>:-Og>)
+        target_compile_options(${PROJECT_NAME}_parse_lib PUBLIC -Wall -Wextra $<$<CONFIG:DEBUG>:-Og>
+          $<$<CONFIG:RELEASE>:-O3> $<$<BOOL:${PERF}>:-O3>)
         if(NOT DEPLOY)
 		# only include machine-specific optimizations when building for the host machine
 		target_compile_options(${PROJECT_NAME}_parse_lib PUBLIC -mtune=native -march=native)
