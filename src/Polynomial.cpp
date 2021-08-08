@@ -57,8 +57,8 @@ Polynomial &Polynomial::operator*=(int32_t constant) {
 }
 
 Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
-  auto m = monomials.begin();
-  auto n = rhs.monomials.begin();
+  auto m = begin();
+  auto n = rhs.begin();
 
   while (m != monomials.end() && n != rhs.monomials.end()) {
     while (m != monomials.end() && m->t > n->t) {
