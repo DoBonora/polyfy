@@ -94,7 +94,7 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
   if (pos == std::string::npos)
     return Monomial(coeff);
 
-  std::set<int32_t, std::greater<int32_t>> monom_vars;
+  std::vector<int32_t> monom_vars;
 
   while ((pos = s_copy.find(delim)) != std::string::npos) {
     token = s_copy.substr(0, pos);
@@ -102,7 +102,7 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
     
     if (var != variables.end()) {
       int32_t var_ord = var->second;
-      monom_vars.insert(var_ord);
+      monom_vars.push_back(var_ord);
     } else {
       throw UndefinedVarException(token);
     }
@@ -113,11 +113,11 @@ Monomial Ideal::monom_from_string(const std::string &s) const {
   
   if (var != variables.end()) {
     int32_t var_ord = var->second;
-    monom_vars.insert(var_ord);
+    monom_vars.push_back(var_ord);
   } else {
     throw UndefinedVarException(token);
   }
-  
+
   return Monomial(coeff, Term(monom_vars));
 }
 

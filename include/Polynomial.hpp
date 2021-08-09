@@ -11,8 +11,8 @@
 #include <string>
 
 class Polynomial {
-  using monoms_t = std::list<Monomial>;
-
+  //  using monoms_t = std::list<Monomial>;
+  using monoms_t = std::vector<Monomial>;
 public:
   using iterator = monoms_t::iterator;
   using const_iterator = monoms_t::const_iterator;
@@ -21,7 +21,7 @@ public:
   Polynomial() = default;
 
   template <typename... Args>
-  Polynomial(Monomial m, Args... ms) : monomials(sizeof...(Args) + 1) {
+  Polynomial(Monomial m, Args... ms) {
     monomials.emplace_back(m);
     (monomials.emplace_back(std::forward<Args>(ms)), ...);
     sort_monomials();
@@ -73,7 +73,8 @@ public:
 protected:
 private:
   friend class Ideal;
-  std::list<Monomial> monomials;
+  std::vector<Monomial> monomials;
+  //  std::list<Monomial> monomials;
   //  std::vector<Monomial> monomials;
   //  std::map<Term, Monomial, std::greater<>> monomials;
 

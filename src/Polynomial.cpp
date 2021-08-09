@@ -1,6 +1,6 @@
 #include "../include/Polynomial.hpp"
 
-#include <algorithm>
+#include <algorithm>            
 #include <gmpxx.h>
 #include <iostream>
 #include <iterator>
@@ -57,37 +57,71 @@ Polynomial &Polynomial::operator*=(int32_t constant) {
 }
 
 Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
-  auto m = begin();
-  auto n = rhs.begin();
-
-  while (m != monomials.end() && n != rhs.monomials.end()) {
-    while (m != monomials.end() && m->t > n->t) {
-      ++m;
-    }
-
-    if (m == monomials.end())
-      break;
-
-    while (n != rhs.monomials.end() && n->t > m->t) {
-      monomials.insert(m, *n);
-      ++n;
-    }
-
-    if (n == rhs.monomials.end())
-      break;
-
-    if (m->t == n->t) {
-      m->coeff += n->coeff;
-      if (m->is_zero())
-        m = monomials.erase(m);
-      ++n;
-    }
+  if(this->is_zero()) {
+    *this = rhs;
+    return *this;
   }
 
-  for (; n != rhs.monomials.end(); ++n) {
-    monomials.push_back(*n);
+  if(rhs.is_zero())
+    return *this;
+
+  auto n = rhs.begin();
+  if (begin()->coeff == -n->coeff && begin()->t == n->t) {
+    monomials.erase(begin());
+    ++n;
+  }
+  for(; n != rhs.cend(); ++n) {
+    auto m = std::lower_bound(
+        this->begin(), this->end(), *n,
+        [](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+
+    if(m == this->end()){
+      monomials.push_back(*n);
+      continue;
+    }
+    
+    if(m->t == n->t) {
+      if(m->coeff == -n->coeff){
+        monomials.erase(m);
+      } else {
+        m->coeff += n->coeff;
+      }
+    } else {
+      monomials.insert(m, *n);
+    }
   }
   return *this;
+  // auto m = begin();
+  // auto n = rhs.begin();
+
+  // while (m != monomials.end() && n != rhs.monomials.end()) {
+  //   while (m != monomials.end() && m->t > n->t) {
+  //     ++m;
+  //   }
+
+  //   if (m == monomials.end())
+  //     break;
+
+  //   while (n != rhs.monomials.end() && n->t > m->t) {
+  //     monomials.insert(m, *n);
+  //     ++n;
+  //   }
+
+  //   if (n == rhs.monomials.end())
+  //     break;
+
+  //   if (m->t == n->t) {
+  //     m->coeff += n->coeff;
+  //     if (m->is_zero())
+  //       m = monomials.erase(m);
+  //     ++n;
+  //   }
+  // }
+
+  // for (; n != rhs.monomials.end(); ++n) {
+  //   monomials.push_back(*n);
+  // }
+  // return *this;
 }
 
 Polynomial &Polynomial::operator+=(const Monomial &m) {
@@ -98,37 +132,40 @@ Polynomial &Polynomial::operator+=(const Monomial &m) {
 
 // Implemented explicitly to avoid two traversals of list
 Polynomial &Polynomial::operator-=(const Polynomial &rhs) {
-  auto m = monomials.begin();
-  auto n = rhs.monomials.begin();
-
-  while (m != monomials.end() && n != rhs.monomials.end()) {
-    while (m != monomials.end() && m->t > n->t) {
-      ++m;
-    }
-
-    if (m == monomials.end())
-      break;
-
-    while (n != rhs.monomials.end() && n->t > m->t) {
-      monomials.insert(m, -*n);
-      ++n;
-    }
-
-    if (n == rhs.monomials.end())
-      break;
-
-    if (m->t == n->t) {
-      m->coeff -= n->coeff;
-      if (m->is_zero())
-        m = monomials.erase(m);
-      ++n;
-    }
-  }
-
-  for (; n != rhs.monomials.end(); ++n) {
-    monomials.push_back(-*n);
-  }
+  *this += -rhs;
   return *this;
+
+  // auto m = monomials.begin();
+  // auto n = rhs.monomials.begin();
+
+  // while (m != monomials.end() && n != rhs.monomials.end()) {
+  //   while (m != monomials.end() && m->t > n->t) {
+  //     ++m;
+  //   }
+
+  //   if (m == monomials.end())
+  //     break;
+
+  //   while (n != rhs.monomials.end() && n->t > m->t) {
+  //     monomials.insert(m, -*n);
+  //     ++n;
+  //   }
+
+  //   if (n == rhs.monomials.end())
+  //     break;
+
+  //   if (m->t == n->t) {
+  //     m->coeff -= n->coeff;
+  //     if (m->is_zero())
+  //       m = monomials.erase(m);
+  //     ++n;
+  //   }
+  // }
+
+  // for (; n != rhs.monomials.end(); ++n) {
+  //   monomials.push_back(-*n);
+  // }
+  // return *this;
 }
 
 Polynomial &Polynomial::operator-=(const Monomial &m) { return *this += (-m); }
@@ -257,8 +294,8 @@ bool Polynomial::lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
-  Term fac_to_lcm(rhs.lt());
-  fac_to_lcm.variables.erase(*rhs.lt().variables.begin());
+  Term fac_to_lcm(std::vector<int32_t>(rhs.lt().variables.begin()+1, rhs.lt().variables.end()));
+  
   if (this->lc() > 0)
     rhs -= (*this) * fac_to_lcm * rhs.lc();
   else
@@ -266,23 +303,22 @@ void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::sort_monomials() {
-  monomials.sort(
-      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  // monomials.sort(
+  //     [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  std::sort(monomials.begin(), monomials.end(), [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
 }
 
 void Polynomial::aggregate_equal_monoms() {
   for (auto m = monomials.begin(); m != monomials.end();) {
     auto next = std::next(m);
     while (next != monomials.end() && m->t == next->t) {
-      next->coeff += m->coeff;
-      monomials.erase(m);
-      m = next;
-      next = std::next(next);
+      m->coeff += next->coeff;
+      next = monomials.erase(next);
     }
     if (m->coeff == 0) {
       m = monomials.erase(m);
     } else {
-      m++;
+      m = next;
     }
   }
 }
