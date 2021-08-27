@@ -1,0 +1,21 @@
+#+TITLE: POLYFY - A Tool for verifying arithmetic circuits using Symbolic Computer Algebra
+#+AUTHOR: Tom Peham
+
+Developer: Tom Peham
+
+* General Information
+
+This tool was developed during the Masters course /Hardware Design/ at the /Johannes Kepler University/. It implements
+the basic method of circuit verification by means of /Symbolic Computer Algebra/ (SCA). In the following we give a brief
+description of this method. The interested reader is encouraged to study the relevant literature(*TODO*) for more
+details.
+
+** SCA
+A circuit is comprised of /input wires/, /output wires/ and /logic gates/ that are also connected via wires. Every
+circuit gate implements some elementary boolean function such as a logical /AND/, /XOR/, etc. Every gate also induces a
+polynomial relationship between the inputs and output of the gate. The following lists the corresponding polynomial
+relation for some basic boolean function:
+
+\begin{align}
+c = a \land b \implies 0 = c - a \cdot b
+\end{align}
