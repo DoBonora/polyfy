@@ -11,8 +11,8 @@
 #include <string>
 
 class Polynomial {
-  //using monoms_t = std::list<Monomial>;
   using monoms_t = std::vector<Monomial>;
+  
 public:
   using iterator = monoms_t::reverse_iterator;
   using const_iterator = monoms_t::const_reverse_iterator;
@@ -50,9 +50,6 @@ public:
 
   mpz_class num_monomials() const;
 
-  // bool can_reduce(const Polynomial &rhs) const;
-  // bool reducible_by(const Polynomial &rhs) const;
-
   bool can_lead_reduce(const Polynomial &rhs) const;
   bool can_linear_lm_lead_reduce(const Polynomial &rhs) const;
   bool lead_reducible_by(const Polynomial &rhs) const;
@@ -60,8 +57,7 @@ public:
   bool lead_reduce(Polynomial &rhs) const;
   // Assumes that this polynomials lm is linear
   void linear_lm_lead_reduce(Polynomial &rhs) const;
-  //  bool reduce(Polynomial &rhs) const;
-
+  
   bool is_zero() const { return monomials.empty(); }
 
   iterator begin() { return monomials.rbegin(); }
@@ -74,7 +70,6 @@ public:
 private:
   friend class Ideal;
   std::vector<Monomial> monomials;
-  //std::list<Monomial> monomials;
   
   void sort_monomials();
   void aggregate_equal_monoms();

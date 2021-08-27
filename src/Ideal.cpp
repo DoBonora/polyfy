@@ -107,15 +107,11 @@ Polynomial Ideal::reduce(const Polynomial &p) {
 
   for (const Polynomial &g : generators) {
     while (g.can_lead_reduce(rem)) {
-      // std::cout << to_string(rem) << "\n";
-      // std::cout << to_string(g) << "\n\n";
-
       g.linear_lm_lead_reduce(rem);
       if (rem == zero())
         return rem;
     }
   }
-  
   return rem;
 }
 

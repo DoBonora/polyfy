@@ -56,31 +56,28 @@ Polynomial &Polynomial::operator*=(int32_t constant) {
   return (*this) *= mpz_class(constant);
 }
 
-void print_poly(const Polynomial& p) {
-  if(p.is_zero())
+void print_poly(const Polynomial &p) {
+  if (p.is_zero())
     std::cout << 0 << "\n";
 
-  for(auto& m: p) {
+  for (auto &m : p) {
     std::cout << m.coeff << "*";
-    for(auto v: m.t) {
+    for (auto v : m.t) {
       std::cout << "v_" << v << "*";
     }
     std::cout << "+";
   }
   std::cout << std::endl << std::endl;
-  
 }
 Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
-  // print_poly(*this);
-  // print_poly(rhs);
   if (this->is_zero()) {
     *this = rhs;
     return *this;
   }
 
-  if(rhs.is_zero())
+  if (rhs.is_zero())
     return *this;
-  
+
   auto m = begin();
   auto n = rhs.begin();
 
@@ -89,7 +86,7 @@ Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
     monomials.erase(m.base());
     n++;
   }
-  
+
   while (n != rhs.end()) {
     auto insert_pos = std::lower_bound(
         monomials.begin(), monomials.end(), *n,
@@ -105,36 +102,6 @@ Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
     }
     ++n;
   }
-  // while (m != end() && n != rhs.end()) {
-  //   while (m != end() && m->t > n->t) {
-  //     ++m;
-  //   }
-
-  //   if (m == end())
-  //     break;
-
-  //   while (n != rhs.end() && n->t > m->t) {
-
-  //     monomials.insert(m.base(), *n);
-  //     ++n;
-  //   }
-
-  //   if (n == rhs.end())
-  //     break;
-
-  //   if (m->t == n->t) {
-  //     if(m->coeff == -n->coeff)
-  //       m =
-  //       std::reverse_iterator<std::vector<Monomial>::iterator>(monomials.erase(m.base()));
-  //     else
-  //       m->coeff += n->coeff;
-  //     ++n;
-  //   }
-  // }
-
-  // for (; n != rhs.end(); ++n) {
-  //   monomials.push_back(*n);
-  // }
   return *this;
 }
 
@@ -144,7 +111,6 @@ Polynomial &Polynomial::operator+=(const Monomial &m) {
   return *this += p;
 }
 
-// Implemented explicitly to avoid two traversals of list
 Polynomial &Polynomial::operator-=(const Polynomial &rhs) {
   *this += -rhs;
   return *this;
@@ -162,7 +128,6 @@ Polynomial &Polynomial::operator-=(int32_t constant) {
 
 Polynomial Polynomial::operator-() const {
   Polynomial p;
-  //  p.monomials.resize(monomials.size());
   for (const Monomial &m : *this)
     p.monomials.push_back(-m);
   return p;
@@ -187,24 +152,10 @@ bool operator<=(const Polynomial &lhs, const Polynomial &rhs) {
 bool operator>(const Polynomial &lhs, const Polynomial &rhs) {
   return std::lexicographical_compare(rhs.begin(), rhs.end(), lhs.begin(),
                                       lhs.end());
-  // return
-  // auto m = lhs.begin(), n = rhs.begin();
-  // for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
-  //   ;
-
-  // return (m != lhs.end() && n == rhs.end()) ||
-  //        (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
 bool operator>=(const Polynomial &lhs, const Polynomial &rhs) {
   return lhs > rhs || lhs == rhs;
-  // auto m = lhs.begin(), n = rhs.begin();
-  // for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
-  //   ;
-
-  // return (m == lhs.end() && n == rhs.end()) ||
-  //        (m != lhs.end() && n == rhs.end()) ||
-  //        (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
 bool operator==(const Polynomial &lhs, const Polynomial &rhs) {
@@ -280,8 +231,6 @@ void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::sort_monomials() {
-  //  monomials.sort(
-  //      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
   std::sort(
       monomials.begin(), monomials.end(),
       [&](const Monomial &m1, const Monomial &m2) { return m1.t < m2.t; });

@@ -84,14 +84,7 @@ Circuit parse_aig(const std::string &file) {
   mockturtle::aig_network aig;
   auto const result = lorina::read_aiger(file, mockturtle::aiger_reader(aig));
   assert(result == lorina::return_code::success);
-
-  // uint32_t shift = aig.num_gates() + aig.num_pos() + aig.num_pis();
-  // for (uint32_t output = 0; output < aig.num_pos(); output++) {
-  //   uint32_t o = shift + output;
-  //   add_variable("o" + std::to_string(o - shift), o);
-  //   outputs.push_back(o);
-  // }
-
+  
   uint64_t shift = aig.num_pos() + aig.num_pis() + aig.num_gates();
   std::unordered_map<uint64_t, std::string> to_string;
   for (size_t output = 0; output < aig.num_pos(); output++) {

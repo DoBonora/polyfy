@@ -9,12 +9,12 @@
 #include "./Monomial.hpp"
 #include "./Polynomial.hpp"
 
-/* only supports lexicographical order for now */
 class Ideal {
 public:
   friend Ideal from_aig(const std::string& file);
   friend Polynomial unsigned_mult_spec(const Ideal& I);
-      /* variable is assumed to be greater then all others inserted before */
+
+  /* variable is assumed to be greater then all others inserted before */
   bool add_variable(const std::string &var);
   int32_t get_variable(const std::string &var) { return variables[var];}
   
@@ -29,16 +29,13 @@ public:
 
   std::string to_string(const Polynomial& poly) const;
   void print_generators() const;
-protected:
+
 private:
-  /* variables ordered from smallest to largest*/
   std::unordered_map<std::string, int32_t> variables;
   std::unordered_map<int32_t, std::string> to_name;
   std::set<Polynomial, std::greater<>> generators;
 
   Monomial monom_from_string(const std::string &s) const;
-
-
 };
 
 #endif /* POLYNOMIAL_VERIFICATION_INCLUDE_IDEAL_HPP_ */

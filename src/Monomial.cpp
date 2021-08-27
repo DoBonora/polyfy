@@ -1,5 +1,6 @@
 #include "../include/Monomial.hpp"
 #include <algorithm>
+
 Monomial::Monomial(int32_t coeff, const Term &t) : coeff(coeff), t(t) {}
 
 Monomial::Monomial(const mpz_class &coeff, const Term &t)

@@ -2,11 +2,10 @@
 #define POLYNOMIAL_VERIFICATION_INCLUDE_MONOMIAL_HPP_
 
 #include <gmpxx.h>
-#include <initializer_list>
 
 #include "../include/Term.hpp"
 
-struct Monomial {
+    struct Monomial {
 public:
   friend class Ideal;
   mpz_class coeff;

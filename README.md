@@ -21,7 +21,7 @@ Developer: Tom Peham
 
 This tool was developed during the Masters course *Hardware Design* at the *Johannes Kepler University*. It implements
 the basic method of circuit verification by means of *Symbolic Computer Algebra* (SCA). The interested reader is
-encouraged to study the relevant literature(**TODO**) for more details. This implementation doesn't apply any advanced
+encouraged to study the [relevant literature](http://www.informatik.uni-bremen.de/agra/sca-verification/index.html) for more details. This implementation doesn't apply any advanced
 techniques necessary to verify complicated multiplier circuits.
 
 
@@ -60,7 +60,7 @@ supporting C++17 and a minimum CMake version of 3.14.
 The project also requires the GNU Multiple Precision Arithmetic Library. It can be installed with `apt` using the
 following command:
 
-`sudo apt install libgmp3-dev`
+    `sudo apt install libgmp3-dev`
 
 
 <a id="org5f4b5e8"></a>
@@ -73,19 +73,19 @@ following command:
 2.  Build the respective target:
     `cmake --build ./build --config Release`
 
-`polyfy` accepts multiplier circuits given in the *aiger* (TODO Link) format. The current version of `polyfy` expects
+`polyfy` accepts multiplier circuits given in the [aiger](http://fmv.jku.at/aiger/) format. The current version of `polyfy` expects
 that the two input operands of the multiplier circuit have the same bit-width.
 
 To use the verifier run
 
-`./polyfy <circtui>.aig`
+    `./polyfy <circtui>.aig`
 
 
 <a id="orge778ccb"></a>
 
 # Implementation Details and Design Decisions
 
-The main SCA routine is the <./src/Ideal.cpp>[reduce] method. The reduction is performed by iterating over the
+The main SCA routine is the [`reduce`](https://github.com/pehamTom/polyfy/blob/master/src/Ideal.cpp#L105) method. The reduction is performed by iterating over the
 circuit polynomials and reducing the leading term of the current specification polynomial. More specifically if `f`
 is the current specification polynomial and `g` is the generator with leading monomial `+/-x` for some variable `x` then we update `f` with
 `f-lm(f)/x*g` (or `f+lm(f)/x*g` depending on the sign of the leading coefficient of `g`) where `lm(f)` is the leading
@@ -93,7 +93,7 @@ monomial of f. This simple reduction is possible because all circuit polynomials
 meaning that the the leading monomial of any circuit polynomials is of the form `+/-x` for some variable `x`. Updating
 `f` this way ensures that the leading term cancels.
 
-Profiling shows that most of the run time during the reduction is spent in the `+=` (TODO: link) method of the
+Profiling shows that most of the run time during the reduction is spent in the [`+=`](https://github.com/pehamTom/polyfy/blob/master/src/Polynomial.cpp#L73) method of the
 `Polynomial` class.
 
 

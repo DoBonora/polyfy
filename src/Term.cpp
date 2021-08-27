@@ -3,9 +3,6 @@
 #include <functional>
 #include <iterator>
 
-// Term::Term(const std::set<int32_t, std::greater<int32_t>> variables)
-//     : variables(variables) {}
-
 Term::Term(int32_t variable) : variables() { variables.push_back(variable); }
 
 Term::Term(const std::vector<int32_t> vars) : variables(vars) { sort_vars(); }
