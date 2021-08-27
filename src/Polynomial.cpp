@@ -57,71 +57,43 @@ Polynomial &Polynomial::operator*=(int32_t constant) {
 }
 
 Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
-  if(this->is_zero()) {
-    *this = rhs;
-    return *this;
-  }
-
-  if(rhs.is_zero())
-    return *this;
-
+  auto m = begin();
   auto n = rhs.begin();
-  if (begin()->coeff == -n->coeff && begin()->t == n->t) {
-    monomials.erase(begin());
-    ++n;
-  }
-  for(; n != rhs.cend(); ++n) {
-    auto m = std::lower_bound(
-        this->begin(), this->end(), *n,
-        [](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
 
-    if(m == this->end()){
-      monomials.push_back(*n);
-      continue;
+  if(m->t == n->t && m->coeff == -n->coeff){
+    m = monomials.erase(m);
+    n++;
+  }
+  
+  while (m != monomials.end() && n != rhs.monomials.end()) {
+    while (m != monomials.end() && m->t > n->t) {
+      ++m;
     }
-    
-    if(m->t == n->t) {
-      if(m->coeff == -n->coeff){
-        monomials.erase(m);
-      } else {
-        m->coeff += n->coeff;
-      }
-    } else {
+
+    if (m == monomials.end())
+      break;
+
+    while (n != rhs.monomials.end() && n->t > m->t) {
       monomials.insert(m, *n);
+      ++n;
     }
+
+    if (n == rhs.monomials.end())
+      break;
+
+    if (m->t == n->t) {
+      if(m->coeff == -n->coeff)
+        m = monomials.erase(m);
+      else
+        m->coeff += n->coeff;        
+      ++n;
+    }
+  }
+
+  for (; n != rhs.monomials.end(); ++n) {
+    monomials.push_back(*n);
   }
   return *this;
-  // auto m = begin();
-  // auto n = rhs.begin();
-
-  // while (m != monomials.end() && n != rhs.monomials.end()) {
-  //   while (m != monomials.end() && m->t > n->t) {
-  //     ++m;
-  //   }
-
-  //   if (m == monomials.end())
-  //     break;
-
-  //   while (n != rhs.monomials.end() && n->t > m->t) {
-  //     monomials.insert(m, *n);
-  //     ++n;
-  //   }
-
-  //   if (n == rhs.monomials.end())
-  //     break;
-
-  //   if (m->t == n->t) {
-  //     m->coeff += n->coeff;
-  //     if (m->is_zero())
-  //       m = monomials.erase(m);
-  //     ++n;
-  //   }
-  // }
-
-  // for (; n != rhs.monomials.end(); ++n) {
-  //   monomials.push_back(*n);
-  // }
-  // return *this;
 }
 
 Polynomial &Polynomial::operator+=(const Monomial &m) {
@@ -134,38 +106,6 @@ Polynomial &Polynomial::operator+=(const Monomial &m) {
 Polynomial &Polynomial::operator-=(const Polynomial &rhs) {
   *this += -rhs;
   return *this;
-
-  // auto m = monomials.begin();
-  // auto n = rhs.monomials.begin();
-
-  // while (m != monomials.end() && n != rhs.monomials.end()) {
-  //   while (m != monomials.end() && m->t > n->t) {
-  //     ++m;
-  //   }
-
-  //   if (m == monomials.end())
-  //     break;
-
-  //   while (n != rhs.monomials.end() && n->t > m->t) {
-  //     monomials.insert(m, -*n);
-  //     ++n;
-  //   }
-
-  //   if (n == rhs.monomials.end())
-  //     break;
-
-  //   if (m->t == n->t) {
-  //     m->coeff -= n->coeff;
-  //     if (m->is_zero())
-  //       m = monomials.erase(m);
-  //     ++n;
-  //   }
-  // }
-
-  // for (; n != rhs.monomials.end(); ++n) {
-  //   monomials.push_back(-*n);
-  // }
-  // return *this;
 }
 
 Polynomial &Polynomial::operator-=(const Monomial &m) { return *this += (-m); }
@@ -253,19 +193,6 @@ const Term &Polynomial::lt() const {
 
 mpz_class Polynomial::num_monomials() const { return monomials.size(); }
 
-// bool Polynomial::can_reduce(const Polynomial &rhs) const {
-//   return rhs.reducible_by(*this);
-// }
-
-// bool Polynomial::reducible_by(const Polynomial &rhs) const {
-//   for (auto [t, m] : monomials) {
-//     if (rhs.lm().factor(m))
-//       return true;
-//   }
-
-//   return false;
-// }
-
 bool Polynomial::can_lead_reduce(const Polynomial &rhs) const {
   return lm().factor(rhs.lm());
 }
@@ -303,9 +230,9 @@ void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::sort_monomials() {
-  // monomials.sort(
-  //     [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
-  std::sort(monomials.begin(), monomials.end(), [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  monomials.sort(
+      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  // std::sort(monomials.begin(), monomials.end(), [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
 }
 
 void Polynomial::aggregate_equal_monoms() {

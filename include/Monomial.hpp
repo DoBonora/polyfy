@@ -23,21 +23,13 @@ public:
   Monomial operator*(const Monomial &other) const;
   Monomial operator*(int32_t factor) const;
   Monomial operator*(const mpz_class &i) const;
-  // /* these operations assume t == other.t */
-  // Monomial operator+(const Monomial& other) const;
-  // Monomial operator-(const Monomial& other) const;
-
+  
   Monomial &operator*=(const Monomial &other);
   Monomial &operator*=(int32_t factor);
   Monomial &operator*=(const mpz_class &i);
 
-  // /* these  operations assume t == other.t */
-  // Monomial& operator+=(const Monomial& other) ;
-  // Monomial& operator-=(const Monomial& other) ;
-
   Monomial operator-() const;
 
-  /* only considers monomial ordering, coefficients are irrelevant*/
   bool operator<(const Monomial &other) const;
   bool operator<=(const Monomial &other) const;
   bool operator>(const Monomial &other) const;

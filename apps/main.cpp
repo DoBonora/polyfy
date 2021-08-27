@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
 
   std::cout << "Verifying " << std::to_string(c.get_input_length())
             << "-bit unsigned multiplier." << std::endl;
+  std::cout << "Number of variables: " << c.get_vars().size() << "\n";
+  std::cout << "Number of gate polynomials: " << c.get_polys().size() << std::endl;
 
   Polynomial spec = I.from_string(c.get_unsigned_mult_spec());
   //  std::cout << I.to_string(spec) << "\n";

@@ -25,10 +25,10 @@ public:
 
   bool operator==(const Term &other) const;
 
-protected:
 private:
-  std::vector<int32_t> variables;  
+  std::vector<int32_t> variables;
   void sort_vars();
+
   friend class Ideal;
   friend class Polynomial;
   friend class Monomial;

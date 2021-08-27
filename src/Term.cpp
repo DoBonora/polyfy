@@ -14,34 +14,34 @@ Term::Term(const std::initializer_list<int32_t> vars) : variables(vars) {
   sort_vars();
 }
 
-Term &Term::operator*=(const Term &other) {
+Term &Term::operator*=(const Term &rhs) {
   size_t i = 0;
   size_t j = 0;
   size_t n = variables.size();
-  size_t m = other.variables.size();
-  
+  size_t m = rhs.variables.size();
+
   while (i < n && j < m) {
-    while (i < n && variables[i] > other.variables[j]) {
+    while (i < n && variables[i] > rhs.variables[j]) {
       ++i;
     }
     if (i >= n)
       break;
-    
-    while (j < m && variables[i] < other.variables[j]) {
-      variables.push_back(other.variables[j++]);
+
+    while (j < m && variables[i] < rhs.variables[j]) {
+      variables.push_back(rhs.variables[j++]);
     }
 
     if (j >= m)
       break;
 
-    if (variables[i] == other.variables[j]) {
+    if (variables[i] == rhs.variables[j]) {
       ++i;
       ++j;
     }
   }
 
   for (; j < m; j++)
-    variables.push_back(other.variables[j]);
+    variables.push_back(rhs.variables[j]);
   sort_vars();
   return *this;
 }
@@ -51,36 +51,22 @@ Term operator*(const Term &t1, const Term &t2) {
   return temp *= t2;
 }
 
-bool Term::operator>(const Term &other) const {
-  return std::lexicographical_compare(other.variables.begin(), other.variables.end(), variables.begin(), variables.end());
+bool Term::operator>(const Term &rhs) const {
+  return std::lexicographical_compare(rhs.variables.begin(),
+                                      rhs.variables.end(), variables.begin(),
+                                      variables.end());
 }
 
-bool Term::operator>=(const Term &other) const {
-  return *this > other || *this == other;
+bool Term::operator>=(const Term &rhs) const {
+  return *this > rhs || *this == rhs;
 }
 
-bool Term::operator>=(const Term &other) const {
-  return (*this)> other || *this == other;
-  // size_t i = 0;
-  // size_t j = 0;
+bool Term::operator<(const Term &rhs) const { return rhs > *this; }
 
-  // for (; i < variables.size() && j < other.variables.size() &&
-  //        variables[i] == other.variables[j];
-  //      ++i, ++j)
-  //   ;
-  // return (i >= variables.size() && j >= other.variables.size()) ||
-  //        (i < variables.size() && j >= other.variables.size()) ||
-  //        (i < variables.size() && j < other.variables.size() &&
-  //         variables[i] >= other.variables[j]);
->>>>>>> tuning
-}
+bool Term::operator<=(const Term &rhs) const { return rhs >= *this; }
 
-bool Term::operator<(const Term &other) const { return other > *this; }
-
-bool Term::operator<=(const Term &other) const { return other >= *this; }
-
-bool Term::operator==(const Term &other) const {
-  return variables == other.variables;
+bool Term::operator==(const Term &rhs) const {
+  return variables == rhs.variables;
 }
 
 void Term::sort_vars() {

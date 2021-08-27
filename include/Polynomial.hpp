@@ -11,17 +11,15 @@
 #include <string>
 
 class Polynomial {
-  //  using monoms_t = std::list<Monomial>;
-  using monoms_t = std::vector<Monomial>;
+  using monoms_t = std::list<Monomial>;
+  //  using monoms_t = std::vector<Monomial>;
 public:
   using iterator = monoms_t::iterator;
   using const_iterator = monoms_t::const_iterator;
 
-  //! Default constructor
   Polynomial() = default;
 
-  template <typename... Args>
-  Polynomial(Monomial m, Args... ms) {
+  template <typename... Args> Polynomial(Monomial m, Args... ms) {
     monomials.emplace_back(m);
     (monomials.emplace_back(std::forward<Args>(ms)), ...);
     sort_monomials();
@@ -32,7 +30,10 @@ public:
   Polynomial &operator*=(const Monomial &m);
   Polynomial &operator*=(const mpz_class &factor);
   Polynomial &operator*=(int32_t constant);
+
+  /* most of the run-time is spent in this method */
   Polynomial &operator+=(const Polynomial &rhs);
+  
   Polynomial &operator+=(const Monomial &m);
   Polynomial &operator-=(const Polynomial &rhs);
   Polynomial &operator-=(const Monomial &m);
@@ -42,7 +43,7 @@ public:
   Polynomial &operator-=(int32_t constant);
 
   Polynomial operator-() const;
-  
+
   const mpz_class &lc() const;
   const Monomial &lm() const;
   const Term &lt() const;
@@ -70,14 +71,11 @@ public:
   const_iterator cbegin() const { return monomials.cbegin(); }
   const_iterator cend() const { return monomials.cend(); }
 
-protected:
 private:
   friend class Ideal;
-  std::vector<Monomial> monomials;
-  //  std::list<Monomial> monomials;
-  //  std::vector<Monomial> monomials;
-  //  std::map<Term, Monomial, std::greater<>> monomials;
-
+  // std::vector<Monomial> monomials;
+  std::list<Monomial> monomials;
+  
   void sort_monomials();
   void aggregate_equal_monoms();
 
@@ -162,6 +160,5 @@ bool operator>(const Polynomial &lhs, const Polynomial &rhs);
 bool operator>=(const Polynomial &lhs, const Polynomial &rhs);
 bool operator==(const Polynomial &lhs, const Polynomial &rhs);
 bool operator!=(const Polynomial &lhs, const Polynomial &rhs);
-
 
 #endif /* POLYNOMIAL_VERIFICATION_INCLUDE_POLYNOMIAL_HPP_ */

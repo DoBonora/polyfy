@@ -55,31 +55,6 @@ Polynomial Ideal::from_string(const std::string &s) const {
 }
 
 Monomial Ideal::monom_from_string(const std::string &s) const {
-  // static std::regex reg_coeff("^([\\-0-9][0-9]*)[[:s:]]*\\*?");
-  // std::smatch match;
-  // bool has_coeff = std::regex_search(s, match, reg_coeff);
-
-  // mpz_class coeff = 1;
-  // int base = 10;
-  // if (has_coeff) {
-  //   coeff = mpz_class(match[1], base);
-  // }
-
-  // std::set<int32_t, std::greater<int32_t>> monom_vars;
-
-  // static std::regex reg_vars("[[:alpha:]][[:alnum:]]*");
-  // auto pos = s.cbegin();
-  // auto end = s.cend();
-  // for (; std::regex_search(pos, end, match, reg_vars);
-  //      pos = match.suffix().first) {
-  //   auto res_it = variables.find(match.str());
-  //   if (res_it != variables.end()) {
-  //     int32_t var_ord = res_it->second;
-  //     monom_vars.insert(var_ord);
-  //   } else {
-  //     throw UndefinedVarException(match.str());
-  //   }
-  // }
   static std::string delim = "*";
   size_t pos = 0;
   std::string token;
@@ -140,7 +115,7 @@ Polynomial Ideal::reduce(const Polynomial &p) {
         return rem;
     }
   }
-
+  
   return rem;
 }
 
