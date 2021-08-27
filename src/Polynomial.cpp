@@ -267,6 +267,9 @@ bool Polynomial::lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
+  /*Since (*this) is a linear lead polynomial we need to multiply (*this)*/
+  /*with all variables except the leading variable to get the LCM of both*/
+  /*leading monomials.*/
   Term fac_to_lcm(std::vector<int32_t>(rhs.lt().variables.begin() + 1,
                                        rhs.lt().variables.end()));
 
