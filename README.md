@@ -60,7 +60,7 @@ supporting C++17 and a minimum CMake version of 3.14.
 The project also requires the GNU Multiple Precision Arithmetic Library. It can be installed with `apt` using the
 following command:
 
-    `sudo apt install libgmp3-dev`
+    sudo apt install libgmp3-dev
 
 
 <a id="org5f4b5e8"></a>
@@ -78,7 +78,7 @@ that the two input operands of the multiplier circuit have the same bit-width.
 
 To use the verifier run
 
-    `./polyfy <circtui>.aig`
+    ./polyfy <circtui>.aig
 
 
 <a id="orge778ccb"></a>
