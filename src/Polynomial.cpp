@@ -1,6 +1,6 @@
 #include "../include/Polynomial.hpp"
 
-#include <algorithm>            
+#include <algorithm>
 #include <gmpxx.h>
 #include <iostream>
 #include <iterator>
@@ -56,43 +56,85 @@ Polynomial &Polynomial::operator*=(int32_t constant) {
   return (*this) *= mpz_class(constant);
 }
 
+void print_poly(const Polynomial& p) {
+  if(p.is_zero())
+    std::cout << 0 << "\n";
+
+  for(auto& m: p) {
+    std::cout << m.coeff << "*";
+    for(auto v: m.t) {
+      std::cout << "v_" << v << "*";
+    }
+    std::cout << "+";
+  }
+  std::cout << std::endl << std::endl;
+  
+}
 Polynomial &Polynomial::operator+=(const Polynomial &rhs) {
+  // print_poly(*this);
+  // print_poly(rhs);
+  if (this->is_zero()) {
+    *this = rhs;
+    return *this;
+  }
+
+  if(rhs.is_zero())
+    return *this;
+  
   auto m = begin();
   auto n = rhs.begin();
 
-  if(m->t == n->t && m->coeff == -n->coeff){
-    m = monomials.erase(m);
+  /*Small optimisation. Most of the time the first monomials will cancel*/
+  if (m->t == n->t && m->coeff == -n->coeff) {
+    monomials.erase(m.base());
     n++;
   }
   
-  while (m != monomials.end() && n != rhs.monomials.end()) {
-    while (m != monomials.end() && m->t > n->t) {
-      ++m;
+  while (n != rhs.end()) {
+    auto insert_pos = std::lower_bound(
+        monomials.begin(), monomials.end(), *n,
+        [&](const Monomial &m1, const Monomial &m2) { return m1.t < m2.t; });
+    if (insert_pos != monomials.end() && insert_pos->t == n->t) {
+      if (insert_pos->coeff == -n->coeff) {
+        monomials.erase(insert_pos);
+      } else {
+        insert_pos->coeff += n->coeff;
+      }
+    } else {
+      monomials.insert(insert_pos, *n);
     }
-
-    if (m == monomials.end())
-      break;
-
-    while (n != rhs.monomials.end() && n->t > m->t) {
-      monomials.insert(m, *n);
-      ++n;
-    }
-
-    if (n == rhs.monomials.end())
-      break;
-
-    if (m->t == n->t) {
-      if(m->coeff == -n->coeff)
-        m = monomials.erase(m);
-      else
-        m->coeff += n->coeff;        
-      ++n;
-    }
+    ++n;
   }
+  // while (m != end() && n != rhs.end()) {
+  //   while (m != end() && m->t > n->t) {
+  //     ++m;
+  //   }
 
-  for (; n != rhs.monomials.end(); ++n) {
-    monomials.push_back(*n);
-  }
+  //   if (m == end())
+  //     break;
+
+  //   while (n != rhs.end() && n->t > m->t) {
+
+  //     monomials.insert(m.base(), *n);
+  //     ++n;
+  //   }
+
+  //   if (n == rhs.end())
+  //     break;
+
+  //   if (m->t == n->t) {
+  //     if(m->coeff == -n->coeff)
+  //       m =
+  //       std::reverse_iterator<std::vector<Monomial>::iterator>(monomials.erase(m.base()));
+  //     else
+  //       m->coeff += n->coeff;
+  //     ++n;
+  //   }
+  // }
+
+  // for (; n != rhs.end(); ++n) {
+  //   monomials.push_back(*n);
+  // }
   return *this;
 }
 
@@ -143,22 +185,26 @@ bool operator<=(const Polynomial &lhs, const Polynomial &rhs) {
 }
 
 bool operator>(const Polynomial &lhs, const Polynomial &rhs) {
-  auto m = lhs.begin(), n = rhs.begin();
-  for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
-    ;
+  return std::lexicographical_compare(rhs.begin(), rhs.end(), lhs.begin(),
+                                      lhs.end());
+  // return
+  // auto m = lhs.begin(), n = rhs.begin();
+  // for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
+  //   ;
 
-  return (m != lhs.end() && n == rhs.end()) ||
-         (m != lhs.end() && n != rhs.end() && *m > *n);
+  // return (m != lhs.end() && n == rhs.end()) ||
+  //        (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
 bool operator>=(const Polynomial &lhs, const Polynomial &rhs) {
-  auto m = lhs.begin(), n = rhs.begin();
-  for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
-    ;
+  return lhs > rhs || lhs == rhs;
+  // auto m = lhs.begin(), n = rhs.begin();
+  // for (; m != lhs.end() && n != rhs.end() && *m == *n; m++, n++)
+  //   ;
 
-  return (m == lhs.end() && n == rhs.end()) ||
-         (m != lhs.end() && n == rhs.end()) ||
-         (m != lhs.end() && n != rhs.end() && *m > *n);
+  // return (m == lhs.end() && n == rhs.end()) ||
+  //        (m != lhs.end() && n == rhs.end()) ||
+  //        (m != lhs.end() && n != rhs.end() && *m > *n);
 }
 
 bool operator==(const Polynomial &lhs, const Polynomial &rhs) {
@@ -176,19 +222,19 @@ bool operator!=(const Polynomial &lhs, const Polynomial &rhs) {
 const mpz_class &Polynomial::lc() const {
   if (this->is_zero())
     return monom_0.coeff;
-  return monomials.begin()->coeff;
+  return begin()->coeff;
 }
 
 const Monomial &Polynomial::lm() const {
   if (this->is_zero())
     return monom_0;
-  return *monomials.begin();
+  return *begin();
 }
 
 const Term &Polynomial::lt() const {
   if (this->is_zero())
     return monom_0.t;
-  return monomials.begin()->t;
+  return begin()->t;
 }
 
 mpz_class Polynomial::num_monomials() const { return monomials.size(); }
@@ -221,8 +267,9 @@ bool Polynomial::lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
-  Term fac_to_lcm(std::vector<int32_t>(rhs.lt().variables.begin()+1, rhs.lt().variables.end()));
-  
+  Term fac_to_lcm(std::vector<int32_t>(rhs.lt().variables.begin() + 1,
+                                       rhs.lt().variables.end()));
+
   if (this->lc() > 0)
     rhs -= (*this) * fac_to_lcm * rhs.lc();
   else
@@ -230,9 +277,11 @@ void Polynomial::linear_lm_lead_reduce(Polynomial &rhs) const {
 }
 
 void Polynomial::sort_monomials() {
-  monomials.sort(
-      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
-  // std::sort(monomials.begin(), monomials.end(), [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  //  monomials.sort(
+  //      [&](const Monomial &m1, const Monomial &m2) { return m1.t > m2.t; });
+  std::sort(
+      monomials.begin(), monomials.end(),
+      [&](const Monomial &m1, const Monomial &m2) { return m1.t < m2.t; });
 }
 
 void Polynomial::aggregate_equal_monoms() {

@@ -343,155 +343,155 @@ protected:
   };
 };
 
-// TEST_F(PolynomialTest, EqTest) {
-//   ASSERT_EQ(f, f2);
-//   ASSERT_EQ(u, u);
-//   ASSERT_EQ(zero, zero);
-// }
-// TEST_F(PolynomialTest, GTTest) {
-//   ASSERT_TRUE(v >= v);
-//   ASSERT_TRUE(v >= f);
-//   ASSERT_TRUE(v >= g);
-//   ASSERT_TRUE(v >= h);
-//   ASSERT_TRUE(v >= u);
-//   ASSERT_TRUE(v >= zero);
+TEST_F(PolynomialTest, EqTest) {
+  ASSERT_EQ(f, f2);
+  ASSERT_EQ(u, u);
+  ASSERT_EQ(zero, zero);
+}
+TEST_F(PolynomialTest, GTTest) {
+  ASSERT_TRUE(v >= v);
+  ASSERT_TRUE(v >= f);
+  ASSERT_TRUE(v >= g);
+  ASSERT_TRUE(v >= h);
+  ASSERT_TRUE(v >= u);
+  ASSERT_TRUE(v >= zero);
 
-//   ASSERT_TRUE(u >= u);
-//   ASSERT_TRUE(u >= f);
-//   ASSERT_TRUE(u >= g);
-//   ASSERT_TRUE(u >= h);
-//   ASSERT_TRUE(u >= zero);
+  ASSERT_TRUE(u >= u);
+  ASSERT_TRUE(u >= f);
+  ASSERT_TRUE(u >= g);
+  ASSERT_TRUE(u >= h);
+  ASSERT_TRUE(u >= zero);
 
-//   ASSERT_TRUE(f >= f);
-//   ASSERT_TRUE(f >= g);
-//   ASSERT_TRUE(f >= h);
-//   ASSERT_TRUE(f >= zero);
+  ASSERT_TRUE(f >= f);
+  ASSERT_TRUE(f >= g);
+  ASSERT_TRUE(f >= h);
+  ASSERT_TRUE(f >= zero);
 
-//   ASSERT_TRUE(g >= g);
-//   ASSERT_TRUE(g >= zero);
+  ASSERT_TRUE(g >= g);
+  ASSERT_TRUE(g >= zero);
 
-//   ASSERT_TRUE(h >= h);
-//   ASSERT_TRUE(h >= g);
-//   ASSERT_TRUE(h >= zero);
+  ASSERT_TRUE(h >= h);
+  ASSERT_TRUE(h >= g);
+  ASSERT_TRUE(h >= zero);
 
-//   ASSERT_TRUE(zero >= zero);
-// }
+  ASSERT_TRUE(zero >= zero);
+}
 
-// TEST_F(PolynomialTest, GreaterTest) {
-//   ASSERT_TRUE(v > f);
-//   ASSERT_TRUE(v > g);
-//   ASSERT_TRUE(v > h);
-//   ASSERT_TRUE(v > u);
-//   ASSERT_TRUE(v > zero);
+TEST_F(PolynomialTest, GreaterTest) {
+  ASSERT_TRUE(v > f);
+  ASSERT_TRUE(v > g);
+  ASSERT_TRUE(v > h);
+  ASSERT_TRUE(v > u);
+  ASSERT_TRUE(v > zero);
 
-//   ASSERT_TRUE(u > f);
-//   ASSERT_TRUE(u > g);
-//   ASSERT_TRUE(u > h);
-//   ASSERT_TRUE(u > zero);
+  ASSERT_TRUE(u > f);
+  ASSERT_TRUE(u > g);
+  ASSERT_TRUE(u > h);
+  ASSERT_TRUE(u > zero);
 
-//   ASSERT_TRUE(f > g);
-//   ASSERT_TRUE(f > h);
-//   ASSERT_TRUE(f > zero);
+  ASSERT_TRUE(f > g);
+  ASSERT_TRUE(f > h);
+  ASSERT_TRUE(f > zero);
 
-//   ASSERT_TRUE(g > zero);
+  ASSERT_TRUE(g > zero);
 
-//   ASSERT_TRUE(h > zero);
-//   ASSERT_TRUE(h > g);
+  ASSERT_TRUE(h > zero);
+  ASSERT_TRUE(h > g);
 
-//   ASSERT_FALSE(zero > zero);
-//   ASSERT_FALSE(f > f);
-//   ASSERT_FALSE(g > g);
-//   ASSERT_FALSE(h > h);
-//   ASSERT_FALSE(u > u);
-//   ASSERT_FALSE(v > v);
-// }
+  ASSERT_FALSE(zero > zero);
+  ASSERT_FALSE(f > f);
+  ASSERT_FALSE(g > g);
+  ASSERT_FALSE(h > h);
+  ASSERT_FALSE(u > u);
+  ASSERT_FALSE(v > v);
+}
 
-// TEST_F(PolynomialTest, LTTest) {
-//   ASSERT_TRUE(v <= v);
-//   ASSERT_TRUE(f <= v);
-//   ASSERT_TRUE(g <= v);
-//   ASSERT_TRUE(h <= v);
-//   ASSERT_TRUE(u <= v);
-//   ASSERT_TRUE(zero <= v);
+TEST_F(PolynomialTest, LTTest) {
+  ASSERT_TRUE(v <= v);
+  ASSERT_TRUE(f <= v);
+  ASSERT_TRUE(g <= v);
+  ASSERT_TRUE(h <= v);
+  ASSERT_TRUE(u <= v);
+  ASSERT_TRUE(zero <= v);
 
-//   ASSERT_TRUE(u <= u);
-//   ASSERT_TRUE(f <= u);
-//   ASSERT_TRUE(g <= u);
-//   ASSERT_TRUE(h <= u);
-//   ASSERT_TRUE(zero <= u);
+  ASSERT_TRUE(u <= u);
+  ASSERT_TRUE(f <= u);
+  ASSERT_TRUE(g <= u);
+  ASSERT_TRUE(h <= u);
+  ASSERT_TRUE(zero <= u);
 
-//   ASSERT_TRUE(f <= f);
-//   ASSERT_TRUE(g <= f);
-//   ASSERT_TRUE(h <= f);
-//   ASSERT_TRUE(zero <= f);
+  ASSERT_TRUE(f <= f);
+  ASSERT_TRUE(g <= f);
+  ASSERT_TRUE(h <= f);
+  ASSERT_TRUE(zero <= f);
 
-//   ASSERT_TRUE(g <= g);
-//   ASSERT_TRUE(zero <= g);
+  ASSERT_TRUE(g <= g);
+  ASSERT_TRUE(zero <= g);
 
-//   ASSERT_TRUE(h <= h);
-//   ASSERT_TRUE(g <= h);
-//   ASSERT_TRUE(zero <= h);
+  ASSERT_TRUE(h <= h);
+  ASSERT_TRUE(g <= h);
+  ASSERT_TRUE(zero <= h);
 
-//   ASSERT_TRUE(zero <= zero);
-// }
+  ASSERT_TRUE(zero <= zero);
+}
 
-// TEST_F(PolynomialTest, LessTest) {
-//   ASSERT_TRUE(f < v);
-//   ASSERT_TRUE(g < v);
-//   ASSERT_TRUE(h < v);
-//   ASSERT_TRUE(u < v);
-//   ASSERT_TRUE(zero < v);
+TEST_F(PolynomialTest, LessTest) {
+  ASSERT_TRUE(f < v);
+  ASSERT_TRUE(g < v);
+  ASSERT_TRUE(h < v);
+  ASSERT_TRUE(u < v);
+  ASSERT_TRUE(zero < v);
 
-//   ASSERT_TRUE(f < u);
-//   ASSERT_TRUE(g < u);
-//   ASSERT_TRUE(h < u);
-//   ASSERT_TRUE(zero < u);
+  ASSERT_TRUE(f < u);
+  ASSERT_TRUE(g < u);
+  ASSERT_TRUE(h < u);
+  ASSERT_TRUE(zero < u);
 
-//   ASSERT_TRUE(g < f);
-//   ASSERT_TRUE(h < f);
-//   ASSERT_TRUE(zero < f);
+  ASSERT_TRUE(g < f);
+  ASSERT_TRUE(h < f);
+  ASSERT_TRUE(zero < f);
 
-//   ASSERT_TRUE(zero < g);
+  ASSERT_TRUE(zero < g);
 
-//   ASSERT_TRUE(g < h);
-//   ASSERT_TRUE(zero < h);
+  ASSERT_TRUE(g < h);
+  ASSERT_TRUE(zero < h);
 
-//   ASSERT_FALSE(zero < zero);
-//   ASSERT_FALSE(f < f);
-//   ASSERT_FALSE(g < g);
-//   ASSERT_FALSE(h < h);
-//   ASSERT_FALSE(u < u);
-//   ASSERT_FALSE(v < v);
-// }
+  ASSERT_FALSE(zero < zero);
+  ASSERT_FALSE(f < f);
+  ASSERT_FALSE(g < g);
+  ASSERT_FALSE(h < h);
+  ASSERT_FALSE(u < u);
+  ASSERT_FALSE(v < v);
+}
 
-// TEST_F(PolynomialTest, MulTest) {
-//   ASSERT_TRUE(f * zero == zero);
-//   Polynomial unit_poly({unit});
-//   ASSERT_TRUE(f * unit == f);
-//   ASSERT_TRUE(f * unit_poly == f);
+TEST_F(PolynomialTest, MulTest) {
+  ASSERT_TRUE(f * zero == zero);
+  Polynomial unit_poly({unit});
+  ASSERT_TRUE(f * unit == f);
+  ASSERT_TRUE(f * unit_poly == f);
 
-//   Polynomial a({z, unit});
-//   ASSERT_TRUE(a * y == g);
+  Polynomial a({z, unit});
+  ASSERT_TRUE(a * y == g);
 
-//   Polynomial large_prod(6 * xyz, 6 * yz, 2 * xy, 2 * y);
-//   ASSERT_EQ(large_prod, f * g);
+  Polynomial large_prod(6 * xyz, 6 * yz, 2 * xy, 2 * y);
+  ASSERT_EQ(large_prod, f * g);
 
-//   ASSERT_TRUE(f * (g * h) == (f * g) * h);
-//   ASSERT_TRUE(u * (v * h) == (u * v) * h);
-//   ASSERT_TRUE(f * g == g * f);
-//   ASSERT_TRUE(u * v == v * u);
+  ASSERT_TRUE(f * (g * h) == (f * g) * h);
+  ASSERT_TRUE(u * (v * h) == (u * v) * h);
+  ASSERT_TRUE(f * g == g * f);
+  ASSERT_TRUE(u * v == v * u);
 
-//   Polynomial test = Polynomial(2*unit, 2*x);
-//   ASSERT_TRUE(2*h == test);
+  Polynomial test = Polynomial(2*unit, 2*x);
+  ASSERT_TRUE(2*h == test);
 
-//   a *= y;
-//   ASSERT_TRUE(a == g);
-//   a *= y;
-//   ASSERT_TRUE(a == g);
-// }
+  a *= y;
+  ASSERT_TRUE(a == g);
+  a *= y;
+  ASSERT_TRUE(a == g);
+}
 
 TEST_F(PolynomialTest, AddTest) {
-   ASSERT_TRUE(f + f == 2 * f);
+  ASSERT_TRUE(f + f == 2 * f);
   ASSERT_TRUE(f + zero == f);
   ASSERT_TRUE(f + g == g + f);
   ASSERT_TRUE(u + v == v + u);

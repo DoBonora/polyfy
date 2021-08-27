@@ -11,11 +11,11 @@
 #include <string>
 
 class Polynomial {
-  using monoms_t = std::list<Monomial>;
-  //  using monoms_t = std::vector<Monomial>;
+  //using monoms_t = std::list<Monomial>;
+  using monoms_t = std::vector<Monomial>;
 public:
-  using iterator = monoms_t::iterator;
-  using const_iterator = monoms_t::const_iterator;
+  using iterator = monoms_t::reverse_iterator;
+  using const_iterator = monoms_t::const_reverse_iterator;
 
   Polynomial() = default;
 
@@ -64,17 +64,17 @@ public:
 
   bool is_zero() const { return monomials.empty(); }
 
-  iterator begin() { return monomials.begin(); }
-  iterator end() { return monomials.end(); }
-  const_iterator begin() const { return monomials.cbegin(); }
-  const_iterator end() const { return monomials.cend(); }
-  const_iterator cbegin() const { return monomials.cbegin(); }
-  const_iterator cend() const { return monomials.cend(); }
+  iterator begin() { return monomials.rbegin(); }
+  iterator end() { return monomials.rend(); }
+  const_iterator begin() const { return monomials.crbegin(); }
+  const_iterator end() const { return monomials.crend(); }
+  const_iterator cbegin() const { return monomials.crbegin(); }
+  const_iterator cend() const { return monomials.crend(); }
 
 private:
   friend class Ideal;
-  // std::vector<Monomial> monomials;
-  std::list<Monomial> monomials;
+  std::vector<Monomial> monomials;
+  //std::list<Monomial> monomials;
   
   void sort_monomials();
   void aggregate_equal_monoms();
