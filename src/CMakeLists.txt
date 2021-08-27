@@ -19,11 +19,11 @@ add_library(${PROJECT_NAME}_parse_lib
 # set include directories
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include/>
-  $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/mockturtle-master/include/>)
+  $<BUILD_INTERFACE:${mockturtle_SOURCE_DIR}/include/>)
 
 target_include_directories(${PROJECT_NAME}_parse_lib PUBLIC
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include/>
-  $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/mockturtle-master/include/>)
+  $<BUILD_INTERFACE:${mockturtle_SOURCE_DIR}/include/>)
 
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 target_compile_features(${PROJECT_NAME}_parse_lib PUBLIC cxx_std_17)

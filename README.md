@@ -78,9 +78,16 @@ that the two input operands of the multiplier circuit have the same bit-width.
 
 To use the verifier run
 
-    ./polyfy <circtui>.aig
+    ./polyfy <circuit>.aig
 
+This project also includes a utility for converting circuits in aiger format to a list of polynomials. To use this
+utility run
 
+    ./aig_to_poly <circuit>.aig
+    
+This prints the list of polynomials to `stdout`. The polynomials are ordered according to a topological ordering from
+smallest to largest. The variables corresponding to inputs are named `i<num>`. Outputs are named `o<num>`. Gate
+variables are named `l<num>`.
 <a id="orge778ccb"></a>
 
 # Implementation Details and Design Decisions

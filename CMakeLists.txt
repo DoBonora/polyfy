@@ -28,8 +28,6 @@ add_library(gmp::gmpxx IMPORTED INTERFACE)
 add_library(gmp::libgmpxx IMPORTED INTERFACE)
 add_library(gmp::libgmp IMPORTED INTERFACE)
 
-add_subdirectory(src)
-
 set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
 download_project(PROJ                mockturtle
                  GIT_REPOSITORY      https://github.com/lsils/mockturtle.git
@@ -39,6 +37,7 @@ download_project(PROJ                mockturtle
                add_subdirectory(${mockturtle_SOURCE_DIR}/include)
                add_subdirectory(  ${mockturtle_SOURCE_DIR}/lib)
 
+               add_subdirectory(src)
 # add test code
 if (BUILD_TESTS)
 	enable_testing()
