@@ -24,7 +24,22 @@ implementation and the specification are interpreted as polynomials. Using Gröb
 circuit is correct if and only if the reduction of the specification polynomial by the circuit polynomials yields a
 remainder of 0.
 
+* Usage
 
+** System Requirements
+
+** Build and Run
+
+* Implementation Details and Design Decisions
+
+The main SCA routine is the [[./src/Ideal.cpp::105]][reduce] method.
+** Term
+
+A term is a power product of circuit variables. Since the variables can only take on values of *0* or *1*, the relation
+~x^2=x~ holds for every variable ~x~. Instead of 
+** Monomial
+
+A monomial is a coefficient
 # ** SCA
 
 # Gröbner Bases are a powerful tool used in many applications. Given a set of variables ~X~ and and /admissible/ ordering on
