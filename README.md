@@ -85,6 +85,8 @@ utility run
 
     ./aig_to_poly <circuit>.aig
     
+The remainder of the specification polynomial and the run time of the reduction are printed to `stdout`. If the
+multiplier is correct the remainder will be 0.
 This prints the list of polynomials to `stdout`. The polynomials are ordered according to a topological ordering from
 smallest to largest. The variables corresponding to inputs are named `i<num>`. Outputs are named `o<num>`. Gate
 variables are named `l<num>`.
