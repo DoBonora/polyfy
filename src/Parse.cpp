@@ -9,6 +9,11 @@
 #include <string>
 #include <unordered_map>
 
+void Circuit::add_reg(const std::string &out, const std::string &in) {
+    check_vars(out, in);
+    reg_polys.emplace_back("-" + out + "+" + in);
+}
+
 void Circuit::add_and_pos_pos(const std::string &out, const std::string &in1,
                               const std::string &in2) {
   check_vars(out, in1, in2);
@@ -85,32 +90,40 @@ Circuit parse_aig(const std::string &file) {
   auto const result = lorina::read_aiger(file, mockturtle::aiger_reader(aig));
   assert(result == lorina::return_code::success);
   
-  uint64_t shift = aig.num_pos() + aig.num_pis() + aig.num_gates();
+  uint64_t shift = aig.num_pos() + aig.num_pis() + aig.num_gates() + aig.num_registers() * 2; //add the registers
   std::unordered_map<uint64_t, std::string> to_string;
   for (size_t output = 0; output < aig.num_pos(); output++) {
     std::string output_name = "o" + std::to_string(output);
     to_string[shift + output] = output_name;
     circuit.add_output(output_name);
   }
-
   aig.foreach_node([&](auto node) {
     std::string varname;
     if (aig.is_pi(node)) {
-      if(node == 0)
-        return;
+      if(node == 0) {
+          return;
+      }
+
       varname = "i" + std::to_string(node-1);
       to_string[node] = varname;
       circuit.add_input(varname);
-    } else {
+    }
+    else if(aig.is_ro(node)){ //added case for register node
+        varname = "r" + std::to_string(node);
+        to_string[node] = varname;
+        circuit.add_gate(varname);
+    }
+    else {
       varname = "l" + std::to_string(node);
       to_string[node] = varname;
       circuit.add_gate(varname);
     }
   });
-
+  //aig.is_combinational()?std::cout<<"Is combinational"<<'\n':std::cout<<"Is not combinational"<<'\n';
   /* Create generator polynomials */
   aig.foreach_gate([&](auto gate) {
     mockturtle::aig_network::signal fanin[2];
+
     aig.foreach_fanin(
         gate, [&fanin, i = 0](auto signal) mutable { fanin[i++] = signal; });
 
@@ -131,6 +144,16 @@ Circuit parse_aig(const std::string &file) {
       circuit.add_and_pos_pos(out, in0, in1);
     }
   });
+    aig.foreach_register([&](auto reg) {
+        mockturtle::aig_network::node nri = aig.get_node(reg.first);
+        mockturtle::aig_network::node nro = reg.second;
+        std::string snri = to_string[nri];
+        std::string snro = to_string[nro];
+
+        circuit.add_reg(snro, snri);
+
+
+    });
 
   uint32_t o = 0;
   aig.foreach_po([&](auto po) {

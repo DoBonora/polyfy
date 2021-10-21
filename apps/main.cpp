@@ -23,6 +23,14 @@ Ideal from_circuit(const Circuit &c) {
       exit(-1);
     }
   }
+    for (auto &g : c.get_reg_polys()) {
+        try {
+            I.add_reg_generator(g);
+        } catch (UndefinedVarException &e) {
+            std::cout << e.what() << "\n";
+            exit(-1);
+        }
+    }
   return I;
 }
 
@@ -47,9 +55,12 @@ int main(int argc, char **argv) {
             << "-bit unsigned multiplier." << std::endl;
   std::cout << "Number of variables: " << c.get_vars().size() << "\n";
   std::cout << "Number of gate polynomials: " << c.get_polys().size() << std::endl;
+  std::cout << "Number of register polynomials: " << c.get_reg_polys().size() << std::endl;
 
   Polynomial spec = I.from_string(c.get_unsigned_mult_spec());
   //  std::cout << I.to_string(spec) << "\n";
+  I.print_generators();
+  I.print_reg_generators();
   auto start = high_resolution_clock::now();
   Polynomial rem = I.reduce(spec);
   auto end = high_resolution_clock::now();

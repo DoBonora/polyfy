@@ -102,11 +102,19 @@ void Ideal::add_generator(const std::string &s) {
   add_generator(from_string(s));
 }
 
+void Ideal::add_reg_generator(const Polynomial &p) { reg_generators.insert(p); }
+
+void Ideal::add_reg_generator(const std::string &s) {
+    add_reg_generator(from_string(s));
+}
+
 Polynomial Ideal::reduce(const Polynomial &p) {
   Polynomial rem = p;
 
   for (const Polynomial &g : generators) {
     while (g.can_lead_reduce(rem)) {
+        std::cout<<"Reducing: "<<to_string(rem)<<std::endl;
+        std::cout<<"By: "<<to_string(g)<<std::endl<<std::endl;
       g.linear_lm_lead_reduce(rem);
       if (rem == zero())
         return rem;
@@ -138,6 +146,13 @@ std::string Ideal::to_string(const Polynomial &poly) const {
 }
 
 void Ideal::print_generators() const {
+    std::cout << "Generators:"<<std::endl;
   for (auto g : generators)
-    std::cout << to_string(g) << "\n";
+    std::cout << "   "<<to_string(g) << "\n";
+}
+
+void Ideal::print_reg_generators() const {
+    std::cout << "Register Generators:"<<std::endl;
+    for (auto g : reg_generators)
+        std::cout << "   "<<to_string(g) << "\n";
 }

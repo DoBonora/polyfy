@@ -23,17 +23,22 @@ public:
   void add_generator(const Polynomial &p);
   void add_generator(const std::string &s);
 
+    void add_reg_generator(const Polynomial &p);
+    void add_reg_generator(const std::string &s);
+
   Polynomial reduce(const Polynomial &p);
 
   Polynomial zero() const;
 
   std::string to_string(const Polynomial& poly) const;
   void print_generators() const;
+  void print_reg_generators() const;
 
 private:
   std::unordered_map<std::string, int32_t> variables;
   std::unordered_map<int32_t, std::string> to_name;
   std::set<Polynomial, std::greater<>> generators;
+  std::set<Polynomial, std::greater<>> reg_generators;
 
   Monomial monom_from_string(const std::string &s) const;
 };
