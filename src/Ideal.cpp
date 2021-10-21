@@ -120,6 +120,16 @@ Polynomial Ideal::reduce(const Polynomial &p) {
         return rem;
     }
   }
+  //after all generator polynoms were used a timestamp happens
+    for (const Polynomial &g : reg_generators) {
+        while (g.can_lead_reduce(rem)) {
+            std::cout<<"Reducing: "<<to_string(rem)<<std::endl;
+            std::cout<<"By: "<<to_string(g)<<std::endl<<std::endl;
+            g.linear_lm_lead_reduce(rem);
+            if (rem == zero())
+                return rem;
+        }
+    }
   return rem;
 }
 

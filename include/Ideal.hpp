@@ -38,7 +38,10 @@ private:
   std::unordered_map<std::string, int32_t> variables;
   std::unordered_map<int32_t, std::string> to_name;
   std::set<Polynomial, std::greater<>> generators;
-  std::set<Polynomial, std::greater<>> reg_generators;
+  //use reverse order for registers so only a single timestep happens with shift-registers
+  //i.e. r2->r3->r4: we expect in a single timestamp to replace r4 with r3, not with r2
+  //by ordering the polynoms in reverse topological order the reduction behaves as expected
+  std::set<Polynomial, std::less<>> reg_generators;
 
   Monomial monom_from_string(const std::string &s) const;
 };
