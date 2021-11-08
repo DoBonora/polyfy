@@ -14,6 +14,10 @@ void Circuit::add_reg(const std::string &out, const std::string &in) {
     reg_polys.emplace_back("-" + out + "+" + in);
 }
 
+void Circuit::reverse_reg() {
+    std::reverse(reg_polys.begin(), reg_polys.end());
+}
+
 void Circuit::add_and_pos_pos(const std::string &out, const std::string &in1,
                               const std::string &in2) {
   check_vars(out, in1, in2);
@@ -154,6 +158,8 @@ Circuit parse_aig(const std::string &file) {
 
 
     });
+    //use reg polynoms in reverse order
+    circuit.reverse_reg();
 
   uint32_t o = 0;
   aig.foreach_po([&](auto po) {

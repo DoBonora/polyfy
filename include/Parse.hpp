@@ -21,6 +21,7 @@ public:
     var_lookup.insert(g);
   }
   void add_reg(const std::string &out, const std::string &in);
+  void reverse_reg();
 
   void add_and_pos_pos(const std::string &out, const std::string &in1,
                        const std::string &in2);
@@ -41,7 +42,7 @@ public:
 
 private:
   std::vector<std::string> polys;
-    std::vector<std::string> reg_polys;
+  std::vector<std::string> reg_polys;
 
   std::vector<std::string> gate_vars;
   std::vector<std::string> input_vars;
@@ -56,6 +57,8 @@ private:
     if constexpr (sizeof...(ss) > 0)
       check_vars(ss...);
   }
+
+
 };
 
 Circuit parse_aig(const std::string &file);

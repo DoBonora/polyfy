@@ -102,7 +102,7 @@ void Ideal::add_generator(const std::string &s) {
     add_generator(from_string(s));
 }
 
-void Ideal::add_reg_generator(const Polynomial &p) { reg_generators.insert(p); }
+void Ideal::add_reg_generator(const Polynomial &p) { reg_generators.emplace_back(p); }
 
 void Ideal::add_reg_generator(const std::string &s) {
     add_reg_generator(from_string(s));
@@ -114,10 +114,7 @@ Polynomial Ideal::reduce(const Polynomial &p) {
     for (int i = 0; i <= timesteps; i++) {
         for (const Polynomial &g: generators) {
             std::cout << "Reducing: " << to_string(rem) << std::endl;
-            std::cout << "Leading monomial: " << to_string(rem.lm()) << std::endl;
             std::cout << "By generator: " << to_string(g) << std::endl;
-            std::cout << "Leading monomial: " << to_string(g.lm()) << std::endl;
-            std::cout << "g can lead recude: " << g.can_lead_reduce(rem) << std::endl;
             while (g.can_lead_reduce(rem)) {
                 g.linear_lm_lead_reduce(rem);
                 if (rem == zero())
