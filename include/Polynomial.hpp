@@ -57,6 +57,7 @@ public:
   bool lead_reduce(Polynomial &rhs) const;
   // Assumes that this polynomials lm is linear
   void linear_lm_lead_reduce(Polynomial &rhs) const;
+  void reg_reduce(Polynomial &rhs) const;
   
   bool is_zero() const { return monomials.empty(); }
 
@@ -76,6 +77,8 @@ private:
 
   static const mpz_class const_0;
   static const Monomial monom_0;
+
+
 };
 
 inline Polynomial operator*(Polynomial lhs, const Polynomial &rhs) {

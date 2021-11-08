@@ -23,8 +23,8 @@ public:
   void add_generator(const Polynomial &p);
   void add_generator(const std::string &s);
 
-    void add_reg_generator(const Polynomial &p);
-    void add_reg_generator(const std::string &s);
+  void add_reg_generator(const Polynomial &p);
+  void add_reg_generator(const std::string &s);
 
   Polynomial reduce(const Polynomial &p);
 

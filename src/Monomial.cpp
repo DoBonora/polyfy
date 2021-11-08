@@ -21,6 +21,7 @@ Monomial &Monomial::operator*=(int32_t factor) {
   return *this;
 }
 
+
 Monomial Monomial::operator-() const { return Monomial(-coeff, t); }
 
 bool Monomial::operator<(const Monomial &other) const {
