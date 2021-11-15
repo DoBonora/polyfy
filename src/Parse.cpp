@@ -18,6 +18,20 @@ void Circuit::reverse_reg() {
     std::reverse(reg_polys.begin(), reg_polys.end());
 }
 
+void Circuit::add_terminal_reg(const std::string &out, const std::string &in) {
+    if(in != "0") {
+        check_vars(out, in);
+    }
+    else {
+        check_vars(out);
+    }
+    terminal_reg_polys.emplace_back("-" + out + "+" + in);
+}
+
+void Circuit::reverse_terminal_reg() {
+    std::reverse(terminal_reg_polys.begin(), terminal_reg_polys.end());
+}
+
 void Circuit::add_and_pos_pos(const std::string &out, const std::string &in1,
                               const std::string &in2) {
   check_vars(out, in1, in2);
@@ -111,11 +125,13 @@ Circuit parse_aig(const std::string &file) {
       varname = "i" + std::to_string(node-1);
       to_string[node] = varname;
       circuit.add_input(varname);
+      std::cout<<"fanout of node "<<varname<<": "<<aig.fanout_size(node)<<std::endl;
     }
     else if(aig.is_ro(node)){ //added case for register node
         varname = "r" + std::to_string(node);
         to_string[node] = varname;
         circuit.add_gate(varname);
+        //std::cout<<"fanin of node "<<varname<<": "<<aig.fanin_size(node)<<std::endl;
     }
     else {
       varname = "l" + std::to_string(node);
@@ -148,6 +164,9 @@ Circuit parse_aig(const std::string &file) {
       circuit.add_and_pos_pos(out, in0, in1);
     }
   });
+    int reg_counter = 0;
+    int input_reg_pos = 0;
+    std::vector<std::string> vars = circuit.get_vars(); //vars for lookup
     aig.foreach_register([&](auto reg) {
         mockturtle::aig_network::node nri = aig.get_node(reg.first);
         mockturtle::aig_network::node nro = reg.second;
@@ -155,11 +174,35 @@ Circuit parse_aig(const std::string &file) {
         std::string snro = to_string[nro];
 
         circuit.add_reg(snro, snri);
-
-
+        //circuit.get_input_length() returns input var /2 therefore 2bit multiplier -> 2.5 -> 2
+        //TODO: Dont assume the second set of input vars is pre loaded into the first n registers
+        //TODO: Dont assume the last 2n register are pre-loaded with 0
+        //TODO: Dont use two foreach register
+        if(snri[0] == 'i') input_reg_pos = reg_counter; //finds which register has the input
+        std::cout << snro << " " << snri << std::endl;
+        reg_counter++;
+    });
+    reg_counter = 0;
+    int input_len = circuit.get_input_length();
+    int input_counter = input_len;
+    aig.foreach_register([&](auto reg) {
+        mockturtle::aig_network::node nro = reg.second;
+        std::string snro = to_string[nro];
+        std::cout << snro  << std::endl;
+        //input shift register either is at the front or the end
+        //registers pre-loaded with 0 are either before or after
+        if(reg_counter < input_reg_pos - (input_len-1) || reg_counter > input_reg_pos) {
+            circuit.add_terminal_reg(snro, "0");
+        }
+        else {
+            std::string snri = vars[input_counter++];
+            circuit.add_terminal_reg(snro, snri);
+        }
+        reg_counter ++;
     });
     //use reg polynoms in reverse order
     circuit.reverse_reg();
+    circuit.reverse_terminal_reg();
 
   uint32_t o = 0;
   aig.foreach_po([&](auto po) {

@@ -23,6 +23,9 @@ public:
   void add_reg(const std::string &out, const std::string &in);
   void reverse_reg();
 
+  void add_terminal_reg(const std::string &out, const std::string &in);
+  void reverse_terminal_reg();
+
   void add_and_pos_pos(const std::string &out, const std::string &in1,
                        const std::string &in2);
   void add_and_pos_neg(const std::string &out, const std::string &in1,
@@ -35,7 +38,8 @@ public:
   void add_eq(const std::string &out, const std::string &in1);
 
   std::vector<std::string> get_polys() const { return polys; }
-    std::vector<std::string> get_reg_polys() const { return reg_polys; }
+  std::vector<std::string> get_reg_polys() const { return reg_polys; }
+  std::vector<std::string> get_terminal_reg_polys() const { return terminal_reg_polys; }
   std::string get_unsigned_mult_spec() const;
   std::vector<std::string> get_vars() const;
   int32_t get_input_length() const { return input_vars.size() / 2; }
@@ -43,6 +47,8 @@ public:
 private:
   std::vector<std::string> polys;
   std::vector<std::string> reg_polys;
+
+  std::vector<std::string> terminal_reg_polys;
 
   std::vector<std::string> gate_vars;
   std::vector<std::string> input_vars;

@@ -26,6 +26,9 @@ public:
   void add_reg_generator(const Polynomial &p);
   void add_reg_generator(const std::string &s);
 
+    void add_terminal_reg_generator(const Polynomial &p);
+    void add_terminal_reg_generator(const std::string &s);
+
   Polynomial reduce(const Polynomial &p);
 
   Polynomial zero() const;
@@ -33,13 +36,18 @@ public:
   std::string to_string(const Polynomial& poly) const;
   void print_generators() const;
   void print_reg_generators() const;
+  void print_terminal_reg_generators() const;
+
+  void set_input_count (int i) {input_count = i;}
 
 private:
+    int input_count;
   std::unordered_map<std::string, int32_t> variables;
   std::unordered_map<int32_t, std::string> to_name;
   std::set<Polynomial, std::greater<>> generators;
   //for registers we cant order the polynomials because a correct order is not guaranteed
   std::vector<Polynomial> reg_generators;
+  std::vector<Polynomial> terminal_reg_generators; //used for pre-loads
 
   Monomial monom_from_string(const std::string &s) const;
 };

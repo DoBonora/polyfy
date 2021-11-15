@@ -228,7 +228,8 @@ void Polynomial::reg_reduce(Polynomial &rhs) const{
             //negative therefore the one to be replaced
             //guaranteed to only ever have a single term
             source = m;
-        } else {
+        }
+        else {
             //positive therefore the target
             //guaranteed to only ever have a single term
             target = m;
