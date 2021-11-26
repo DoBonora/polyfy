@@ -117,25 +117,31 @@ void Ideal::add_terminal_reg_generator(const std::string &s) {
 Polynomial Ideal::reduce(const Polynomial &p) {
     Polynomial rem = p;
     int timesteps = input_count; //TODO: assumption: Circuit needs as many clock ticks as it has bits
+    int peakMonom = 0;
     for (int i = 0; i <= timesteps; i++) {
+        int progressCounter = 1;
         for (const Polynomial &g: generators) {
-            std::cout << "Reducing: " << to_string(rem) << std::endl;
-            std::cout << "By generator: " << to_string(g) << std::endl;
+            std::cout << "Progress: " << progressCounter++ << "/" << generators.size();
+            peakMonom = rem.monomials.size()>peakMonom?rem.monomials.size():peakMonom;
+            std::cout << "  PeakMonomial: "<<peakMonom<< "\r"<<std::flush;
+            //std::cout << "Reducing: " << to_string(rem) << std::endl;
+            //std::cout << "By generator: " << to_string(g) << std::endl;
             while (g.can_lead_reduce(rem)) {
                 g.linear_lm_lead_reduce(rem);
                 if (rem == zero())
                     return rem;
             }
-            std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
+            //std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
         }
+        std::cout << std::endl;
         //after all generator polynoms were used a timestep happens
         if(i < timesteps && !reg_generators.empty()) {
             std::cout << "Timestep: " << i <<" start" <<std::endl;
             for (const Polynomial &g: reg_generators) {
-                std::cout << "Reducing: " << to_string(rem) << std::endl;
-                std::cout << "By register: " << to_string(g) << std::endl;
+                //std::cout << "Reducing: " << to_string(rem) << std::endl;
+                //std::cout << "By register: " << to_string(g) << std::endl;
                 g.reg_reduce(rem);
-                std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
+                //std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
             }
             rem.sort_monomials(); //as the reg operations arent lead reduce operations
             rem.aggregate_equal_monoms(); //we can just do a single sort and aggregate after the whole step
@@ -145,10 +151,10 @@ Polynomial Ideal::reduce(const Polynomial &p) {
             //TODO: Terminal Timestep
             std::cout<< "Terminal timestep" << std::endl;
             for (const Polynomial &g: terminal_reg_generators) {
-                std::cout << "Reducing: " << to_string(rem) << std::endl;
-                std::cout << "By register: " << to_string(g) << std::endl;
+                //std::cout << "Reducing: " << to_string(rem) << std::endl;
+                //std::cout << "By register: " << to_string(g) << std::endl;
                 g.reg_reduce(rem);
-                std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
+                //std::cout << "Result: " << to_string(rem) << std::endl<< std::endl;
             }
             rem.sort_monomials(); //as the reg operations arent lead reduce operations
             rem.aggregate_equal_monoms(); //we can just do a single sort and aggregate after the whole step

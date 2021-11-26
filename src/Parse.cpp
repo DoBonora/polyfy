@@ -125,7 +125,7 @@ Circuit parse_aig(const std::string &file) {
       varname = "i" + std::to_string(node-1);
       to_string[node] = varname;
       circuit.add_input(varname);
-      std::cout<<"fanout of node "<<varname<<": "<<aig.fanout_size(node)<<std::endl;
+      //std::cout<<"fanout of node "<<varname<<": "<<aig.fanout_size(node)<<std::endl;
     }
     else if(aig.is_ro(node)){ //added case for register node
         varname = "r" + std::to_string(node);
@@ -179,7 +179,7 @@ Circuit parse_aig(const std::string &file) {
         //TODO: Dont assume the last 2n register are pre-loaded with 0
         //TODO: Dont use two foreach register
         if(snri[0] == 'i') input_reg_pos = reg_counter; //finds which register has the input
-        std::cout << snro << " " << snri << std::endl;
+        //std::cout << snro << " " << snri << std::endl;
         reg_counter++;
     });
     reg_counter = 0;
@@ -188,7 +188,7 @@ Circuit parse_aig(const std::string &file) {
     aig.foreach_register([&](auto reg) {
         mockturtle::aig_network::node nro = reg.second;
         std::string snro = to_string[nro];
-        std::cout << snro  << std::endl;
+        //std::cout << snro  << std::endl;
         //input shift register either is at the front or the end
         //registers pre-loaded with 0 are either before or after
         if(reg_counter < input_reg_pos - (input_len-1) || reg_counter > input_reg_pos) {
