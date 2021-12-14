@@ -29,7 +29,7 @@ public:
     void add_terminal_reg_generator(const Polynomial &p);
     void add_terminal_reg_generator(const std::string &s);
 
-  Polynomial reduce(const Polynomial &p);
+  Polynomial reduce(const Polynomial &p, bool debugOutput);
 
   Polynomial zero() const;
 

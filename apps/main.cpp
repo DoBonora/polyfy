@@ -44,7 +44,7 @@ Ideal from_circuit(const Circuit &c) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
+  if (argc != 2 && argc != 3) {
     std::cout << "Incorrect number of arguments"
               << "\n";
     std::cout << helper_string << "\n";
@@ -72,11 +72,15 @@ int main(int argc, char **argv) {
 
   Polynomial spec = I.from_string(c.get_unsigned_mult_spec());
   //  std::cout << I.to_string(spec) << "\n";
-  I.print_generators();
-  I.print_reg_generators();
-  I.print_terminal_reg_generators();
+    if(argc == 3 && (std::string)argv[2] == "true") {
+        I.print_generators();
+        I.print_reg_generators();
+        I.print_terminal_reg_generators();
+    }
   auto start = high_resolution_clock::now();
-  Polynomial rem = I.reduce(spec);
+  Polynomial rem;
+  if(argc == 3 && (std::string)argv[2] == "true") rem = I.reduce(spec, true);
+  else rem = I.reduce(spec, false);
   auto end = high_resolution_clock::now();
 
   std::cout << "\nRemainder after reduction:"
